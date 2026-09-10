@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Paleta Avança Imóveis — verde-petróleo sobre papel quente.
+  Valores em HSL "H S% L%" (sem hsl()) para casar com tailwind.config.ts.
+*/
+:root {
+  --bg: 48 27% 94%;
+  --surface: 48 33% 97%;
+  --surface-2: 45 26% 91%;
+  --ink: 150 11% 12%;
+  --muted: 140 6% 38%;
+  --line: 44 21% 83%;
+  --accent: 190 62% 27%;
+  --accent-ink: 191 70% 19%;
+  --ok: 146 45% 33%;
+  --warn: 35 50% 40%;
+  --danger: 0 74% 42%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: 140 9% 8%;
+    --surface: 144 10% 12%;
+    --surface-2: 140 8% 15%;
+    --ink: 75 12% 90%;
+    --muted: 140 5% 62%;
+    --line: 140 8% 21%;
+    --accent: 187 45% 57%;
+    --accent-ink: 187 55% 78%;
+    --ok: 146 42% 57%;
+    --warn: 33 57% 60%;
+    --danger: 0 80% 68%;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: 140 9% 8%;
+  --surface: 144 10% 12%;
+  --surface-2: 140 8% 15%;
+  --ink: 75 12% 90%;
+  --muted: 140 5% 62%;
+  --line: 140 8% 21%;
+  --accent: 187 45% 57%;
+  --accent-ink: 187 55% 78%;
+  --ok: 146 42% 57%;
+  --warn: 33 57% 60%;
+  --danger: 0 80% 68%;
+}
+
+@layer base {
+  * {
+    @apply border-line;
+  }
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-bg;
+  }
+}
