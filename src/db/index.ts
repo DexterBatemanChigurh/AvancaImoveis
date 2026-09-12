@@ -18,6 +18,10 @@ const client =
   postgres(env.DATABASE_URL, {
     max: 10,
     prepare: false,
+    // "prefer": usa SSL quando o servidor exige (Render, por exemplo, recusa
+    // conexão sem SSL), mas não quebra o Postgres local do docker-compose,
+    // que não tem SSL configurado.
+    ssl: "prefer",
   });
 
 if (process.env.NODE_ENV !== "production") {
