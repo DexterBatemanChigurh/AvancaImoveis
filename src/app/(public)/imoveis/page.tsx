@@ -49,14 +49,22 @@ export default async function CatalogPage({
 
   const page = sp.pagina && Number(sp.pagina) > 0 ? Number(sp.pagina) : 1;
 
+  // "faixa" vem do bloco de busca da home (components/home/search-block.tsx):
+  // um único select "min-max" codificado, pra não precisar de JS extra só
+  // pra preencher dois campos. min/max explícitos (vindos do filtro normal
+  // desta página) sempre têm prioridade sobre o valor de "faixa".
+  const [faixaMin, faixaMax] = (sp.faixa ?? "").split("-");
+  const minPrice = sp.min ?? faixaMin;
+  const maxPrice = sp.max ?? faixaMax;
+
   const [catalog, districts] = await Promise.all([
     listPublicProperties({
       district: sp.bairro || undefined,
       city: sp.cidade || undefined,
       state: sp.uf || undefined,
       kind,
-      minPrice: sp.min ? Number(sp.min) : undefined,
-      maxPrice: sp.max ? Number(sp.max) : undefined,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
       minBedrooms: sp.quartos ? Number(sp.quartos) : undefined,
       minBathrooms: sp.banheiros ? Number(sp.banheiros) : undefined,
       minParkingSpots: sp.vagas ? Number(sp.vagas) : undefined,
@@ -69,13 +77,15 @@ export default async function CatalogPage({
 
   return (
     <div className="flex flex-col">
-      {/* Busca em primeiro lugar — sem hero grande na frente. Página rola como
-          uma landing page comum, sem nada fixo sobrepondo o conteúdo. */}
-      <div className="border-b border-line bg-surface-2">
+      <div className="container flex flex-col gap-2 pb-8 pt-14 sm:pt-20">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted">
+          Catálogo completo
+        </p>
+        <h1 className="text-3xl sm:text-5xl">Imóveis à venda</h1>
+      </div>
+
+      <div className="border-y border-line bg-surface-2">
         <div className="container flex flex-col gap-3 py-4">
-          <p className="text-sm font-medium text-muted">
-            Imóveis à venda em Frutal e região
-          </p>
           <AutoSubmitForm className="flex flex-wrap items-center gap-2">
             <select
               name="tipo"
@@ -179,7 +189,7 @@ export default async function CatalogPage({
         </div>
       </div>
 
-      <section className="container py-8">
+      <section className="container py-12 sm:py-16">
         <CatalogResults properties={catalog.items} total={catalog.total} />
         <Pagination
           page={catalog.page}

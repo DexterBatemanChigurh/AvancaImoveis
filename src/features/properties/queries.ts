@@ -116,6 +116,95 @@ export async function listAvailableDistricts(scope?: {
   return rows.map((r) => r.district).filter((d): d is string => Boolean(d));
 }
 
+/**
+ * Imóveis "em destaque" pra home — os N com mais visualizações
+ * (properties.views_count), dentro dos disponíveis pro público.
+ */
+export async function listFeaturedProperties(limit = 3) {
+  return db.query.properties.findMany({
+    where: eq(properties.status, "disponivel"),
+    orderBy: [desc(properties.viewsCount)],
+    limit,
+    with: {
+      photos: {
+        orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
+        limit: MAX_PHOTOS_PER_PROPERTY,
+      },
+    },
+  });
+}
+
+/**
+ * "Imóvel do mês" — o mais visto dentro do mês corrente, calculado a
+ * partir de `property_views` (tem `createdAt` por visita, ao contrário de
+ * `properties.views_count`, que é um total acumulado desde sempre).
+ */
+export async function listMostViewedThisMonth(limit = 1) {
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const ranked = await db
+    .select({ propertyId: propertyViews.propertyId, views: count() })
+    .from(propertyViews)
+    .innerJoin(properties, eq(properties.id, propertyViews.propertyId))
+    .where(
+      and(eq(properties.status, "disponivel"), gte(propertyViews.createdAt, startOfMonth)),
+    )
+    .groupBy(propertyViews.propertyId)
+    .orderBy(desc(count()))
+    .limit(limit);
+
+  if (ranked.length === 0) return [];
+
+  const ids = ranked.map((r) => r.propertyId);
+  const withData = await db.query.properties.findMany({
+    where: inArray(properties.id, ids),
+    with: {
+      photos: {
+        orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
+        limit: MAX_PHOTOS_PER_PROPERTY,
+      },
+    },
+  });
+
+  const rank = new Map(ids.map((id, i) => [id, i]));
+  return withData.sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
+}
+
+/**
+ * Uma prévia por tipo de imóvel (para a seção de categorias da home):
+ * quantos disponíveis existem e a foto de capa do imóvel mais visto
+ * daquele tipo.
+ */
+export async function listCategoryOverview(): Promise<
+  Array<{ kind: Property["kind"]; total: number; coverStorageKey: string | null }>
+> {
+  const totals = await db
+    .select({ kind: properties.kind, total: count() })
+    .from(properties)
+    .where(eq(properties.status, "disponivel"))
+    .groupBy(properties.kind);
+
+  const mostViewedWithPhotos = await db.query.properties.findMany({
+    where: eq(properties.status, "disponivel"),
+    orderBy: [desc(properties.viewsCount)],
+    limit: 40,
+    columns: { kind: true },
+    with: {
+      photos: { orderBy: [desc(propertyPhotos.isCover)], limit: 1 },
+    },
+  });
+
+  return totals.map(({ kind, total }) => ({
+    kind,
+    total,
+    coverStorageKey:
+      mostViewedWithPhotos.find((p) => p.kind === kind && p.photos[0])?.photos[0]?.storageKey ??
+      null,
+  }));
+}
+
 /** Imóveis disponíveis a partir de uma lista de ids — usado pela página de favoritos. */
 export async function listPublicPropertiesByIds(ids: string[]) {
   if (ids.length === 0) return [];

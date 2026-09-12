@@ -12,10 +12,14 @@ export function PropertyCardMedia({
   title,
   photos,
   badges,
+  aspectClassName = "aspect-[4/3]",
 }: {
   title: string;
   photos: Photo[];
   badges: string[];
+  /** Proporção da moldura — cards do catálogo usam algo mais quadrado, a
+   * home usa um recorte mais editorial/vertical (ver property-card.tsx). */
+  aspectClassName?: string;
 }) {
   const [active, setActive] = useState(0);
   const hasMultiple = photos.length > 1;
@@ -28,7 +32,7 @@ export function PropertyCardMedia({
 
   return (
     <div
-      className="relative aspect-[4/3] overflow-hidden bg-surface-2"
+      className={`relative overflow-hidden bg-surface-2 ${aspectClassName}`}
       onMouseMove={(e) => {
         if (!hasMultiple) return;
         const rect = e.currentTarget.getBoundingClientRect();

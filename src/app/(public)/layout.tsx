@@ -1,15 +1,16 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { Instagram, MapPin, MessageCircle, Phone } from "lucide-react";
-import { Fredoka, Plus_Jakarta_Sans } from "next/font/google";
+import { Instagram, MapPin, Phone } from "lucide-react";
+import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 
-import { FavoritesNavLink } from "@/components/public/favorites-nav-link";
 import { LiveRefresh } from "@/components/public/live-refresh";
+import { SiteHeader } from "@/components/public/site-header";
 import { AVANCA, waLink } from "@/lib/brand";
 
-const brandDisplay = Fredoka({
+const brandDisplay = Playfair_Display({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-brand-display",
   display: "swap",
 });
@@ -27,65 +28,40 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       className={`brand-public ${brandDisplay.variable} ${brandSans.variable} min-h-screen bg-bg font-brand-sans text-ink flex flex-col`}
     >
       <LiveRefresh />
-      <header className="border-b border-line bg-surface">
-        <div className="container flex h-20 items-center justify-between">
-          <Link href="/imoveis" className="flex items-center gap-2.5">
-            {/* TODO: trocar pelo arquivo real do logo (public/logo.svg) quando chegar */}
-            <span
-              aria-hidden
-              className="grid h-10 w-10 place-items-center rounded-2xl bg-ink text-lg font-bold text-bg"
-              style={{ fontFamily: "var(--font-brand-display)" }}
-            >
-              A
-            </span>
-            <span className="flex flex-col leading-none">
-              <span
-                className="text-xl font-semibold tracking-tight"
-                style={{ fontFamily: "var(--font-brand-display)" }}
-              >
-                Avança
-              </span>
-              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted">
-                Imóveis
-              </span>
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-1 sm:gap-3">
-            <a
-              href={`tel:+${AVANCA.phoneDigits}`}
-              className="hidden items-center gap-1.5 text-sm font-medium text-ink hover:opacity-70 sm:flex"
-            >
-              <Phone className="h-4 w-4" />
-              {AVANCA.phoneDisplay}
-            </a>
-            <FavoritesNavLink />
-            <a
-              href={waLink("Olá! Vi o site da Avança Imóveis e gostaria de mais informações.")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-bg transition-opacity hover:opacity-85"
-            >
-              <MessageCircle className="h-4 w-4" />
-              WhatsApp
-            </a>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="flex-1">{children}</main>
 
       <footer className="border-t border-line bg-surface">
-        <div className="container grid gap-10 py-14 sm:grid-cols-[1.3fr_1fr_1fr]">
-          <div className="flex flex-col gap-3">
-            <span
-              className="text-lg font-semibold tracking-tight"
-              style={{ fontFamily: "var(--font-brand-display)" }}
-            >
-              Avança Imóveis
-            </span>
+        <div className="container grid gap-10 py-16 sm:grid-cols-[1.3fr_0.8fr_1fr_1fr] sm:py-20">
+          <div className="flex flex-col gap-4">
+            <Image
+              src="/logo.png"
+              alt="Avança Imóveis"
+              width={118}
+              height={90}
+              className="brand-logo h-10 w-auto self-start"
+            />
             <p className="max-w-sm text-sm leading-relaxed text-muted">{AVANCA.about}</p>
             <p className="text-xs text-muted">Avança Imóveis faz parte do Grupo PIER7.</p>
+          </div>
+
+          <div className="flex flex-col gap-3 text-sm">
+            <span className="font-semibold">Navegação</span>
+            <Link href="/imoveis" className="link-underline w-fit text-muted hover:text-ink">
+              Imóveis
+            </Link>
+            <Link href="/sobre" className="link-underline w-fit text-muted hover:text-ink">
+              Sobre
+            </Link>
+            <a
+              href={waLink("Olá! Vi o site da Avança Imóveis e gostaria de mais informações.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-underline w-fit text-muted hover:text-ink"
+            >
+              Contato
+            </a>
           </div>
 
           <div className="flex flex-col gap-3 text-sm">

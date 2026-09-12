@@ -79,7 +79,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
   );
 
   return (
-    <article className="container flex flex-col gap-10 py-8 sm:py-10">
+    <article className="container flex flex-col gap-12 py-10 sm:gap-16 sm:py-16">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -89,13 +89,13 @@ export default async function PropertyPage({ params }: { params: Params }) {
 
       <Breadcrumb kind={property.kind} district={property.district} />
 
-      <header className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+      <header className="flex flex-col gap-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted">
           {PROPERTY_KIND_LABELS[property.kind]} · {property.code}
           {property.district ? ` · ${property.district}` : ""}
         </p>
-        <h1 className="text-3xl sm:text-4xl">{property.title}</h1>
-        <p className="text-2xl font-semibold">{formatBRL(property.salePrice)}</p>
+        <h1 className="max-w-2xl text-3xl sm:text-5xl">{property.title}</h1>
+        <p className="text-2xl font-medium">{formatBRL(property.salePrice)}</p>
       </header>
 
       {property.photos.length > 0 && (
@@ -112,8 +112,8 @@ export default async function PropertyPage({ params }: { params: Params }) {
         </div>
       )}
 
-      <div className="grid gap-10 lg:grid-cols-[1fr_20rem]">
-        <div className="flex flex-col gap-8">
+      <div className="grid gap-12 lg:grid-cols-[1fr_20rem] lg:gap-16">
+        <div className="flex flex-col gap-10">
           <Facts property={property} />
 
           {property.description && (
@@ -177,7 +177,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
           </section>
         </div>
 
-        <aside className="flex h-fit flex-col gap-4 rounded-brand border border-line bg-surface p-5">
+        <aside className="flex h-fit flex-col gap-4 rounded-2xl bg-surface-2 p-6">
           <a
             href={waHref}
             target="_blank"
@@ -259,13 +259,13 @@ function Facts({
   if (visible.length === 0) return null;
 
   return (
-    <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-brand border border-line bg-surface p-5 sm:grid-cols-4">
+    <dl className="grid grid-cols-2 gap-x-8 gap-y-5 border-y border-line py-6 sm:grid-cols-4">
       {visible.map(([label, value]) => (
-        <div key={label} className="flex flex-col">
-          <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+        <div key={label} className="flex flex-col gap-1">
+          <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-muted">
             {label}
           </dt>
-          <dd className="text-lg">{value}</dd>
+          <dd className="text-xl">{value}</dd>
         </div>
       ))}
     </dl>
