@@ -1,0 +1,23 @@
+# Postgres dedicado para desenvolvimento local.
+# Sobe com:  docker compose up -d db     (ou: npm run db:up)
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: avanca_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: avanca
+      POSTGRES_PASSWORD: avanca
+      POSTGRES_DB: avanca
+    ports:
+      - "5432:5432"
+    volumes:
+      - avanca_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U avanca -d avanca"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  avanca_pgdata:

@@ -1,17 +1,34 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
-import { updateSession } from "@/lib/supabase/middleware";
+import { SESSION_COOKIE } from "@/lib/auth/constants";
 
-export async function middleware(request: NextRequest) {
-  return updateSession(request);
+/**
+ * Gate leve do /admin: só checa se existe o cookie de sessão.
+ * A validação real (sessão no banco, usuário ativo) é feita por
+ * requireUser() no layout de /admin — o middleware roda no Edge e não
+ * acessa o banco.
+ */
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const hasSession = request.cookies.has(SESSION_COOKIE);
+
+  if (pathname.startsWith("/admin") && !hasSession) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (pathname === "/login" && hasSession) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  /**
-   * Roda em tudo, menos arquivos estáticos e imagens do Next.
-   * O gate de /admin fica em updateSession().
-   */
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif)$).*)",
-  ],
+  matcher: ["/admin/:path*", "/login"],
 };

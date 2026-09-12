@@ -37,9 +37,9 @@ Um único projeto e um único banco, com **dois ambientes de uso**. O catálogo 
               └──────────────┬───────────────┘
                              ▼
          ┌───────────────────────────────────────┐
-         │        PostgreSQL — Supabase           │
+         │        PostgreSQL (dedicado)           │
          │ imóveis · clientes · CRM · visitas ·   │
-         │ proprietários                          │
+         │ proprietários · usuários · sessões     │
          └───────────────────┬───────────────────┘
                              ▼
               ┌──────────────────────────────┐
@@ -58,10 +58,10 @@ Escolhas que priorizam começar no **plano gratuito**, ter deploy automático e 
 
 | Ferramenta | Papel | Como funciona no início |
 |---|---|---|
-| **Next.js** | Framework que renderiza o catálogo e o painel. | Catálogo renderizado no servidor (bom para SEO); painel é uma aplicação autenticada dentro do mesmo projeto. |
-| **Vercel** | Hospedagem e publicação. | Deploy automático a cada alteração, endereço `avanca-imoveis.vercel.app`, CDN de imagens incluída. Cada branch gera um ambiente de preview. |
-| **Supabase — Postgres** | Banco de dados relacional. | Guarda todas as entidades. Plano gratuito; migração para o plano pago só quando o volume pedir. |
-| **Supabase Auth** | Login do painel. | E-mail e senha, sem tela de autocadastro. Usuários criados manualmente por nós. Protege apenas `/admin`. |
+| **Next.js** | Backend + frontend num app só. | Catálogo renderizado no servidor (bom para SEO); painel é uma aplicação autenticada. Server Actions + rotas `/api` fazem o papel de backend — sem serviço separado. |
+| **PostgreSQL (dedicado)** | Banco de dados relacional, sem serviço proprietário. | Local via `docker compose`; em produção, qualquer Postgres (VPS ou gerenciado). Acesso por Drizzle ORM. |
+| **Autenticação própria** | Login do painel. | E-mail + senha (hash `scrypt`, nativo do Node) e sessão em cookie `httpOnly` guardada na tabela `sessions`. Sem autocadastro; contas criadas por CLI (`npm run user:create`). Protege apenas `/admin`. |
+| **Hospedagem** | Publicação do app. | A definir (Vercel, VPS ou container). Deploy do app Next + um Postgres alcançável. |
 | **Cloudflare R2** | Armazenamento de fotos e documentos. | Banda de saída gratuita — ideal para catálogo público com muitas imagens. Toda foto é otimizada no upload (WebP, ~2000 px, com miniatura). |
 | **React + Tailwind + shadcn/ui** | Componentes de interface do painel. | Biblioteca pronta para formulários, listas e tabelas. Kanban do CRM com `dnd-kit` (arrastar e soltar). |
 | **Leaflet + OpenStreetMap** | Mapa na página do imóvel. | Pin do endereço sem custo e sem chave de API. O endereço é convertido em coordenadas no cadastro. |
@@ -188,7 +188,7 @@ Site aberto, sem login, com visual de landing page. O cliente só vê imóveis d
 
 ## 7 — Acesso e usuários
 
-Login apenas no `/admin`; o catálogo fica 100% aberto. Supabase Auth com e-mail e senha, sem tela de cadastro — as contas são criadas por nós.
+Login apenas no `/admin`; o catálogo fica 100% aberto. Autenticação própria: e-mail + senha (hash `scrypt`), sessão em cookie `httpOnly` na tabela `sessions`, sem serviço externo. Sem tela de cadastro — as contas são criadas por CLI (`npm run user:create`).
 
 **Recomendação:** um usuário por pessoa (Fernanda, Rogério, Ana Clara, você e eu). Não tem custo e preserva o histórico de quem cadastrou o imóvel, quem moveu o card, quem apagou o quê. A alternativa pedida — dois logins compartilhados — funciona, mas perde essa rastreabilidade e obriga a trocar a senha de todos quando alguém sai. **Decisão em aberto.**
 
@@ -198,18 +198,18 @@ Todos com o mesmo nível de acesso na v1. Papéis mais restritos (por exemplo, A
 
 ## 8 — Armazenamento e custos
 
-### No início — tudo em plano gratuito
+### No início — quase tudo gratuito
 
-- **Vercel (Hobby)** — grátis para uso interno e tráfego inicial.
-- **Supabase (Free)** — ~1 GB de banco, ~1 GB de storage, ~5 GB de banda/mês.
+- **App Next.js** — roda em qualquer host de Node/container; local via `docker compose`.
+- **PostgreSQL dedicado** — grátis local (Docker); em produção, um Postgres pequeno (VPS ~US$ 5/mês ou plano gratuito de um gerenciado).
 - **Cloudflare R2** — 10 GB grátis/mês; banda de saída sempre gratuita.
 - **Resend** — faixa gratuita (~3.000 e-mails/mês).
 
-> Conta das fotos: otimizadas ficam em ~300–500 KB. 10 por imóvel ≈ 4 MB. ~1.000 imóveis ≈ 4 GB. Storage não vira gargalo; a banda do catálogo é absorvida pelo CDN da Vercel.
+> Conta das fotos: otimizadas ficam em ~300–500 KB. 10 por imóvel ≈ 4 MB. ~1.000 imóveis ≈ 4 GB. Storage e banda não são gargalo nessa escala.
 
 ### Quando escalar
 
-- **Supabase Pro** — US$ 25/mês: 100 GB de storage, 250 GB de banda.
+- **Postgres** — subir o plano/instância conforme o volume; backup automático é o ponto a garantir.
 - **Domínio próprio** — ≈ R$ 40–60/ano.
 - **WhatsApp automático** — API oficial (Meta/Twilio), cobrada por conversa, só se fizer falta.
 

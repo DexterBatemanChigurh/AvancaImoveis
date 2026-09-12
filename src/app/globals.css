@@ -50,6 +50,42 @@
   --danger: 0 80% 68%;
 }
 
+/*
+  Marca pública Avança Imóveis — preto e branco puro (o logo não tem cor),
+  aplicada só dentro de .brand-public (site público). O painel interno
+  continua com a paleta acima. Accent = ink: sem cor de destaque por ora,
+  a pedido do cliente — trocar aqui quando a paleta de marca for definida.
+*/
+.brand-public {
+  --bg: 0 0% 100%;
+  --surface: 0 0% 100%;
+  --surface-2: 0 0% 96%;
+  --ink: 0 0% 8%;
+  --muted: 0 0% 42%;
+  --line: 0 0% 88%;
+  --accent: 0 0% 8%;
+  --accent-ink: 0 0% 0%;
+}
+@media (prefers-color-scheme: dark) {
+  .brand-public {
+    --bg: 0 0% 7%;
+    --surface: 0 0% 11%;
+    --surface-2: 0 0% 15%;
+    --ink: 0 0% 96%;
+    --muted: 0 0% 66%;
+    --line: 0 0% 24%;
+    --accent: 0 0% 96%;
+    --accent-ink: 0 0% 100%;
+  }
+}
+.brand-public h1,
+.brand-public h2,
+.brand-public h3 {
+  font-family: var(--font-brand-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
 @layer base {
   * {
     @apply border-line;

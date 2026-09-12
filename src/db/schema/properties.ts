@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { timestamps, listingType, propertyKind, propertyStatus } from "./_shared";
@@ -129,3 +130,24 @@ export const propertyDocuments = pgTable("property_documents", {
 
 export type PropertyDocument = typeof propertyDocuments.$inferSelect;
 export type NewPropertyDocument = typeof propertyDocuments.$inferInsert;
+
+/**
+ * Uma linha por (imóvel, visitante) — garante no máximo 1 view contada por
+ * IP em `properties.views_count`. Guarda o hash do IP, não o IP puro.
+ */
+export const propertyViews = pgTable(
+  "property_views",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    propertyId: uuid("property_id")
+      .notNull()
+      .references(() => properties.id, { onDelete: "cascade" }),
+    ipHash: text("ip_hash").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    unique: uniqueIndex("property_views_property_ip_unique").on(t.propertyId, t.ipHash),
+  }),
+);
+
+export type PropertyView = typeof propertyViews.$inferSelect;

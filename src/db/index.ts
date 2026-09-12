@@ -6,8 +6,8 @@ import * as schema from "./schema";
 
 /**
  * Cliente Drizzle único por processo.
- * Em serverless (Vercel) o pooler do Supabase (porta 6543) já cuida das conexões,
- * então mantemos `max: 1` e sem prepared statements.
+ * `max: 1` + `prepare: false` funciona tanto com Postgres local quanto atrás
+ * de um pooler em modo transação, caso a produção use um.
  */
 const globalForDb = globalThis as unknown as {
   _pg?: ReturnType<typeof postgres>;
@@ -16,7 +16,7 @@ const globalForDb = globalThis as unknown as {
 const client =
   globalForDb._pg ??
   postgres(env.DATABASE_URL, {
-    max: 1,
+    max: 10,
     prepare: false,
   });
 

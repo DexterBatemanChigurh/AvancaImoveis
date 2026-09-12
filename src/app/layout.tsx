@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     template: "%s · Avança Imóveis",
   },
   description:
-    "Imóveis à venda selecionados pela Avança Imóveis. Casas e apartamentos com fotos, localização e detalhes.",
+    "Oportunidades imobiliárias e investimento estratégico em Frutal, MG. Avança Imóveis conecta pessoas a negócios que fazem sentido para os seus objetivos.",
   openGraph: {
     type: "website",
     locale: "pt_BR",
@@ -45,11 +45,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
+    // suppressHydrationWarning: extensões de navegador (LanguageTool, Grammarly…)
+    // injetam atributos em <html>/<body> antes do React hidratar. É benigno.
     <html
       lang="pt-BR"
       className={`${display.variable} ${sans.variable} ${mono.variable}`}
+      suppressHydrationWarning
     >
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

@@ -46,3 +46,36 @@ export async function geocodeAddress(
     displayName: first.display_name,
   };
 }
+
+/**
+ * Geocodifica tentando do endereço mais completo até o mais genérico.
+ * Necessário na prática: o OpenStreetMap raramente tem o nº do imóvel
+ * cadastrado em cidades pequenas, e às vezes nem o logradouro — mas
+ * bairro/cidade quase sempre resolve, então o pino nunca fica "no nada".
+ */
+export async function geocodeAddressCascade(parts: {
+  street?: string | null;
+  number?: string | null;
+  district?: string | null;
+  city?: string | null;
+  state?: string | null;
+}): Promise<GeocodeResult | null> {
+  const { street, number, district, city, state } = parts;
+  const candidates = [
+    [street, number, district, city, state],
+    [street, district, city, state],
+    [street, city, state],
+    [district, city, state],
+    [city, state],
+  ].map((p) => p.filter(Boolean).join(", "));
+
+  const queries = [...new Set(candidates.filter(Boolean))];
+
+  for (let i = 0; i < queries.length; i++) {
+    const result = await geocodeAddress(queries[i]!);
+    if (result) return result;
+    // Respeita o limite de 1 req/s do Nominatim antes da próxima tentativa.
+    if (i < queries.length - 1) await new Promise((r) => setTimeout(r, 1100));
+  }
+  return null;
+}

@@ -3,10 +3,10 @@ import { defineConfig } from "drizzle-kit";
 
 config({ path: ".env.local" });
 
-// As migrations rodam contra a conexão direta (porta 5432), não o pooler.
-const url = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+// Migrations usam DIRECT_URL se definida, senão DATABASE_URL.
+const url = process.env.DIRECT_URL || process.env.DATABASE_URL;
 if (!url) {
-  throw new Error("Defina DIRECT_URL ou DATABASE_URL para rodar o drizzle-kit.");
+  throw new Error("Defina DATABASE_URL (ou DIRECT_URL) para rodar o drizzle-kit.");
 }
 
 export default defineConfig({

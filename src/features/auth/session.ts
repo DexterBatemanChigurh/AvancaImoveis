@@ -2,44 +2,37 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  getSessionUser as readSession,
+  type SessionUser,
+} from "@/lib/auth/session";
 
-export type SessionUser = {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-};
+export type { SessionUser };
 
-/**
- * Usuário autenticado + dados do espelho local (nome, papel).
- * Retorna null se não houver sessão.
- */
+/** Usuário autenticado ou null. */
 export async function getSessionUser(): Promise<SessionUser | null> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const local = await db.query.users.findFirst({
-    where: eq(users.id, user.id),
-  });
-
-  return {
-    id: user.id,
-    email: user.email ?? local?.email ?? "",
-    name: local?.name ?? user.email ?? "Usuário",
-    role: local?.role ?? "equipe",
-  };
+  return readSession();
 }
 
 /** Igual a getSessionUser, mas redireciona para /login se não autenticado. */
 export async function requireUser(): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) redirect("/login");
+  return user;
+}
+
+/**
+ * Igual a requireUser, mas também exige que `role` seja um dos informados —
+ * redireciona pro dashboard (não pro /login) se autenticado mas sem o papel
+ * necessário. `users.role` já existe na tabela ("equipe" | "admin"), mas
+ * hoje NENHUMA rota usa esse helper: o negócio pediu explicitamente "todos
+ * com o mesmo nível de acesso" na Fase 1. Fica pronto pra quando alguma
+ * tela (ex.: configurações, exclusão de usuário) precisar ser admin-only —
+ * não decidi isso sozinho porque é uma escolha de produto, não técnica.
+ */
+export async function requireRole(role: string | string[]): Promise<SessionUser> {
+  const user = await requireUser();
+  const allowed = Array.isArray(role) ? role : [role];
+  if (!allowed.includes(user.role)) redirect("/admin");
   return user;
 }

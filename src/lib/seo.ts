@@ -1,6 +1,6 @@
 import { env } from "@/lib/env";
 import type { Property, PropertyPhoto } from "@/db/schema";
-import { publicUrl } from "@/lib/storage/r2";
+import { publicUrl } from "@/lib/storage/url";
 
 export function absoluteUrl(path: string) {
   return `${env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")}${path}`;
@@ -43,4 +43,15 @@ export function propertyJsonLd(
       addressCountry: "BR",
     },
   };
+}
+
+/**
+ * Serializa para injetar em <script type="application/ld+json"> com
+ * dangerouslySetInnerHTML. `JSON.stringify` sozinho não escapa `<` — um
+ * título/descrição de imóvel contendo `</script>` fecharia a tag e
+ * injetaria HTML/script arbitrário na página pública. `<` é
+ * interpretado de volta como `<` pelo parser de JSON, sem mudar o dado.
+ */
+export function toSafeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }

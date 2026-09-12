@@ -5,9 +5,7 @@
  *   node --env-file=.env.local --import tsx src/db/seed.ts
  *   (ou simplesmente: npm run db:seed)
  */
-import { config } from "dotenv";
-config({ path: ".env.local" });
-
+// As variáveis vêm de `node --env-file=.env.local` (ver script db:seed no package.json).
 import { count } from "drizzle-orm";
 
 import { db } from "./index";

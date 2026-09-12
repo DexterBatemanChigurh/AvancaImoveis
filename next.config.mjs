@@ -3,18 +3,35 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   experimental: {
-    // Server Actions são usadas nos formulários do painel.
+    // Server Actions são usadas nos formulários do painel e no upload de fotos.
     serverActions: {
-      bodySizeLimit: "8mb", // upload de fotos passa por aqui na Fase 1
+      bodySizeLimit: "16mb",
     },
   },
-  images: {
-    // O bucket público do R2 é servido por um domínio próprio/of dev.
-    // Ajuste o hostname em R2_PUBLIC_HOST (.env) e replique aqui.
-    remotePatterns: [
-      { protocol: "https", hostname: "**.r2.dev" },
-      { protocol: "https", hostname: "**.r2.cloudflarestorage.com" },
-    ],
+  // Fotos/documentos são servidos same-origin por /uploads/[...path]
+  // (ver lib/storage/local.ts) — o otimizador de imagem não precisa de remotePatterns.
+
+  // Headers de segurança básicos, sem depender do proxy de produção estar
+  // configurado corretamente. Não inclui Content-Security-Policy: o site usa
+  // JSON-LD inline (dangerouslySetInnerHTML) e tiles do Leaflet/OpenStreetMap,
+  // e uma CSP estrita precisa ser testada num navegador de verdade pra não
+  // quebrar isso silenciosamente — fica como próximo passo, não algo pra
+  // adivinhar aqui.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+    ];
   },
 };
 

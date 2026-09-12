@@ -10,6 +10,8 @@ export const interestFormSchema = z.object({
   consent: z.literal("on", {
     errorMap: () => ({ message: "É necessário aceitar o uso dos dados." }),
   }),
+  // "Avise-me de imóveis parecidos" — só cria alerta se também tiver e-mail.
+  similarAlerts: z.literal("on").optional().or(z.literal("")),
 });
 
 export type InterestFormValues = z.infer<typeof interestFormSchema>;

@@ -1,0 +1,43 @@
+databases:
+  - name: avanca-db
+    plan: free
+    postgresMajorVersion: "17"
+
+services:
+  - type: web
+    name: avanca-imoveis
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      # Preenchido automaticamente pelo Render com a connection string
+      # interna do banco acima — não precisa mexer.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: avanca-db
+          property: connectionString
+
+      # Ajuste se o serviço acabar criado com outro nome/subdomínio
+      # (o Render avisa a URL final na tela de criação).
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://avanca-imoveis.onrender.com
+
+      # Gerados automaticamente pelo Render na primeira sincronização —
+      # não precisa (e não deve) preencher isso aqui.
+      - key: AUTH_PEPPER
+        generateValue: true
+      - key: IP_HASH_PEPPER
+        generateValue: true
+
+      - key: STORAGE_DIR
+        value: ./storage/uploads
+
+      # Opcionais (e-mail via Resend) — "sync: false" faz o Render pedir
+      # esses valores manualmente no painel, sem gravar nada aqui no repo.
+      - key: RESEND_API_KEY
+        sync: false
+      - key: LEADS_NOTIFY_TO
+        sync: false
+      - key: LEADS_NOTIFY_FROM
+        sync: false

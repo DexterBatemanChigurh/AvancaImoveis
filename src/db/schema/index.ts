@@ -10,13 +10,14 @@ import {
   propertyDocuments,
   propertyPhotos,
 } from "./properties";
+import { sessions, users } from "./users";
 import { stages } from "./stages";
-import { users } from "./users";
 import { visits } from "./visits";
 
 /* ----------------------------- re-exports ----------------------------- */
 export * from "./_shared";
 export * from "./activities";
+export * from "./alerts";
 export * from "./clients";
 export * from "./deals";
 export * from "./owners";
@@ -74,6 +75,17 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   deals: many(deals),
   visits: many(visits),
   activities: many(activities),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
 }));
 
 export const stagesRelations = relations(stages, ({ many }) => ({

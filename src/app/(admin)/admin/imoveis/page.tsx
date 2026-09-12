@@ -1,15 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { Pagination } from "@/components/public/pagination";
 import { PropertyStatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { listAdminProperties } from "@/features/properties/queries";
+import { ADMIN_PAGE_SIZE, listAdminProperties } from "@/features/properties/queries";
 import { formatBRL } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Imóveis" };
 
-export default async function AdminPropertiesPage() {
-  const properties = await listAdminProperties().catch(() => []);
+type SearchParams = Promise<Record<string, string | undefined>>;
+
+export default async function AdminPropertiesPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const sp = await searchParams;
+  const page = sp.pagina && Number(sp.pagina) > 0 ? Number(sp.pagina) : 1;
+
+  const { items: properties, total } = await listAdminProperties({ page }).catch(() => ({
+    items: [],
+    total: 0,
+    page: 1,
+    pageSize: ADMIN_PAGE_SIZE,
+  }));
+  const totalPages = Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,6 +77,13 @@ export default async function AdminPropertiesPage() {
           </table>
         </div>
       )}
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        basePath="/admin/imoveis"
+        searchParams={sp}
+      />
     </div>
   );
 }

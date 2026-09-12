@@ -11,7 +11,9 @@ const config: Config = {
     container: {
       center: true,
       padding: "1.25rem",
-      screens: { "2xl": "1200px" },
+      // Site público mais largo em telas grandes — evita sobra de espaço
+      // nas laterais quando a grade do catálogo é de 3 colunas.
+      screens: { "2xl": "1800px" },
     },
     extend: {
       colors: {
@@ -31,9 +33,13 @@ const config: Config = {
         display: ["var(--font-display)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        // Tipografia da marca (site público) — carregada em (public)/layout.tsx.
+        brand: ["var(--font-brand-display)", "system-ui", "sans-serif"],
+        "brand-sans": ["var(--font-brand-sans)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         card: "10px",
+        brand: "1.25rem",
       },
     },
   },

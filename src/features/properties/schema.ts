@@ -2,6 +2,15 @@ import { z } from "zod";
 
 import { MAX_PHOTOS_PER_PROPERTY } from "@/lib/constants";
 
+/**
+ * Número opcional vindo de <input type="number">. Sem isso, `z.coerce.number()`
+ * transforma "" (campo deixado em branco) em 0 — não em "ausente" — e todo
+ * campo numérico opcional viraria zero silenciosamente.
+ */
+function optionalNumber(schema: z.ZodNumber) {
+  return z.preprocess((v) => (v === "" || v == null ? undefined : v), schema.optional());
+}
+
 /** Validação do formulário de imóvel (painel). Compartilhada por client e server. */
 export const propertyFormSchema = z.object({
   title: z.string().min(3, "Informe um título."),
@@ -10,20 +19,30 @@ export const propertyFormSchema = z.object({
   kind: z.enum(["casa", "apartamento", "terreno", "comercial", "outro"]),
 
   salePrice: z.coerce.number().positive("Valor de venda inválido."),
-  condoFee: z.coerce.number().nonnegative().optional(),
-  iptuYearly: z.coerce.number().nonnegative().optional(),
+  condoFee: optionalNumber(z.coerce.number().nonnegative()),
+  iptuYearly: optionalNumber(z.coerce.number().nonnegative()),
 
   street: z.string().optional(),
   number: z.string().optional(),
   complement: z.string().optional(),
   district: z.string().optional(),
   city: z.string().optional(),
-  state: z.string().length(2).optional().or(z.literal("")),
+  // Aceita "mg", "MG " etc. — normaliza antes de exigir 2 letras, pra não
+  // rejeitar em silêncio por causa de maiúscula/espaço.
+  state: z.preprocess(
+    (v) => (typeof v === "string" ? v.trim().toUpperCase() : v),
+    z.string().length(2, "Use a sigla do estado, ex.: MG.").optional().or(z.literal("")),
+  ),
   zipCode: z.string().optional(),
   hideExactAddress: z.coerce.boolean().default(false),
+  // Preenchidas automaticamente por geocodificação ao salvar; só usar estes
+  // campos pra corrigir manualmente quando o endereço não geocodificar bem.
+  latitude: optionalNumber(z.coerce.number().min(-90).max(90)),
+  longitude: optionalNumber(z.coerce.number().min(-180).max(180)),
+  forceGeocode: z.coerce.boolean().default(false),
 
-  usableArea: z.coerce.number().nonnegative().optional(),
-  totalArea: z.coerce.number().nonnegative().optional(),
+  usableArea: optionalNumber(z.coerce.number().nonnegative()),
+  totalArea: optionalNumber(z.coerce.number().nonnegative()),
   bedrooms: z.coerce.number().int().nonnegative().default(0),
   suites: z.coerce.number().int().nonnegative().default(0),
   bathrooms: z.coerce.number().int().nonnegative().default(0),
@@ -38,7 +57,7 @@ export const propertyFormSchema = z.object({
   listingType: z.enum(["exclusiva", "aberta"]).optional().or(z.literal("")),
   listingStart: z.string().optional(),
   listingEnd: z.string().optional(),
-  commissionPct: z.coerce.number().min(0).max(100).optional(),
+  commissionPct: optionalNumber(z.coerce.number().min(0).max(100)),
 });
 
 export type PropertyFormValues = z.infer<typeof propertyFormSchema>;

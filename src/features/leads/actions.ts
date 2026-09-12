@@ -1,10 +1,23 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
+
 import { asc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { activities, clients, dealProperties, deals, properties, stages } from "@/db/schema";
+import {
+  activities,
+  clients,
+  dealProperties,
+  deals,
+  properties,
+  searchAlerts,
+  stages,
+} from "@/db/schema";
 import { env, features } from "@/lib/env";
+import { getClientIp } from "@/lib/request-ip";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { sendAlertConfirmationEmail } from "@/features/alerts/notify";
 import { CONSENT_TEXT, interestFormSchema } from "./schema";
 
 export type InterestState = {
@@ -12,6 +25,10 @@ export type InterestState = {
   error?: string;
   fieldErrors?: Record<string, string[]>;
 };
+
+// Sem isso, um script enche o CRM de leads falsos em segundos.
+const LEAD_LIMIT = 5;
+const LEAD_WINDOW_MS = 60 * 60 * 1000;
 
 /**
  * Cria (ou reaproveita) um lead a partir do formulário público,
@@ -22,6 +39,11 @@ export async function submitInterest(
   _prev: InterestState,
   formData: FormData,
 ): Promise<InterestState> {
+  const ip = await getClientIp();
+  if (!checkRateLimit(`lead:${ip}`, LEAD_LIMIT, LEAD_WINDOW_MS)) {
+    return { ok: false, error: "Muitas mensagens enviadas. Tente novamente mais tarde." };
+  }
+
   const parsed = interestFormSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) {
     return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors };
@@ -30,7 +52,16 @@ export async function submitInterest(
 
   const property = await db.query.properties.findFirst({
     where: eq(properties.id, v.propertyId),
-    columns: { id: true, title: true, code: true, slug: true },
+    columns: {
+      id: true,
+      title: true,
+      code: true,
+      slug: true,
+      district: true,
+      kind: true,
+      salePrice: true,
+      bedrooms: true,
+    },
   });
   if (!property) return { ok: false, error: "Imóvel não encontrado." };
 
@@ -88,7 +119,38 @@ export async function submitInterest(
     }
   }
 
-  // 3) aviso por e-mail (opcional na Fase 1)
+  // 3) "avise-me de imóveis parecidos" — vira um alerta de busca com
+  // critério derivado do próprio imóvel (mesmo bairro/tipo, preço ±20%).
+  // Mesma regra de confirmação por e-mail do alerta manual (evita que o
+  // campo "e-mail" do formulário seja usado pra assinar terceiros).
+  if (v.similarAlerts === "on" && v.email) {
+    const email = v.email.trim().toLowerCase();
+    const confirmToken = randomBytes(16).toString("hex");
+    const needsConfirmation = features.alertEmail;
+
+    await db
+      .insert(searchAlerts)
+      .values({
+        email,
+        district: property.district,
+        kind: property.kind,
+        minPrice: Math.round(property.salePrice * 0.8),
+        maxPrice: Math.round(property.salePrice * 1.2),
+        minBedrooms: property.bedrooms || null,
+        unsubscribeToken: randomBytes(16).toString("hex"),
+        confirmToken,
+        confirmedAt: needsConfirmation ? null : new Date(),
+        consentAt: new Date(),
+      })
+      .then(async () => {
+        if (needsConfirmation) {
+          await sendAlertConfirmationEmail({ email, confirmToken });
+        }
+      })
+      .catch((err) => console.error("Falha ao criar alerta a partir do lead:", err));
+  }
+
+  // 4) aviso por e-mail pra equipe (opcional na Fase 1)
   if (features.leadEmail) {
     await notifyTeam({
       name: v.name,

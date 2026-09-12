@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { CopyLinkButton } from "@/components/admin/copy-link-button";
 import { PropertyForm } from "@/components/admin/property-form";
+import { PropertyPhotos } from "@/components/admin/property-photos";
 import { PropertyStatusBadge } from "@/components/ui/badge";
 import { updateProperty } from "@/features/properties/actions";
 import { getPropertyById } from "@/features/properties/queries";
@@ -46,10 +47,7 @@ export default async function EditPropertyPage({ params }: { params: Params }) {
         </div>
       </div>
 
-      <p className="text-sm text-muted">
-        Upload de fotos e documentos entra na Fase 1 (ver README §Roadmap). Por ora,
-        os dados textuais do imóvel já podem ser cadastrados e publicados.
-      </p>
+      <PropertyPhotos propertyId={property.id} photos={property.photos} />
 
       <PropertyForm action={boundAction} property={property} owners={owners} />
     </div>

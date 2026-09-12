@@ -5,25 +5,31 @@ import { z } from "zod";
  * Falha cedo e com mensagem clara se algo essencial estiver faltando.
  * Veja .env.example para a lista completa.
  */
+
+/** Trata "" como ausente — variáveis vazias no .env não devem quebrar validações opcionais. */
+const optionalStr = z.preprocess(
+  (v) => (v === "" ? undefined : v),
+  z.string().optional(),
+);
 const schema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
 
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-
   DATABASE_URL: z.string().min(1),
-  DIRECT_URL: z.string().min(1).optional(),
+  DIRECT_URL: optionalStr, // usado só pelas migrations; default = DATABASE_URL
 
-  R2_ACCOUNT_ID: z.string().optional(),
-  R2_ACCESS_KEY_ID: z.string().optional(),
-  R2_SECRET_ACCESS_KEY: z.string().optional(),
-  R2_BUCKET: z.string().default("avanca-imoveis"),
-  R2_PUBLIC_HOST: z.string().url().optional(),
+  AUTH_PEPPER: optionalStr, // tempero opcional do hash de senha
+  // Tempero do hash de IP (contador de views) — separado do AUTH_PEPPER de
+  // propósito: são domínios de segurança diferentes (senha vs. dedupe de
+  // IP) e não devem compartilhar o mesmo segredo. Se não definido, cai de
+  // volta pro AUTH_PEPPER (compatibilidade com ambientes já configurados).
+  IP_HASH_PEPPER: optionalStr,
 
-  RESEND_API_KEY: z.string().optional(),
-  LEADS_NOTIFY_TO: z.string().optional(),
-  LEADS_NOTIFY_FROM: z.string().optional(),
+  // Fotos e documentos em disco — pasta montada como volume persistente em produção.
+  STORAGE_DIR: z.string().default("./storage/uploads"),
+
+  RESEND_API_KEY: optionalStr,
+  LEADS_NOTIFY_TO: optionalStr,
+  LEADS_NOTIFY_FROM: optionalStr,
 });
 
 const parsed = schema.safeParse(process.env);
@@ -42,8 +48,7 @@ export const env = parsed.data;
 
 /** Flags derivadas — recursos que dependem de config opcional. */
 export const features = {
-  storage: Boolean(
-    env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_ACCOUNT_ID,
-  ),
   leadEmail: Boolean(env.RESEND_API_KEY && env.LEADS_NOTIFY_TO),
+  // Alerta de busca envia pro e-mail do próprio visitante — só precisa do Resend.
+  alertEmail: Boolean(env.RESEND_API_KEY),
 };

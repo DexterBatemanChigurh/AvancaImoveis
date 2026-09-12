@@ -13,7 +13,7 @@ export function InterestForm({ propertyId }: { propertyId: string }) {
 
   if (state.ok) {
     return (
-      <div className="rounded-card border border-ok/40 bg-ok/10 p-4 text-sm">
+      <div className="rounded-2xl border border-ok/40 bg-ok/10 p-4 text-sm">
         Recebemos seu contato. A equipe da Avança Imóveis vai te retornar em breve.
       </div>
     );
@@ -35,9 +35,14 @@ export function InterestForm({ propertyId }: { propertyId: string }) {
         <textarea
           name="message"
           rows={3}
-          className="rounded-md border border-line bg-bg px-3 py-2"
+          className="rounded-2xl border border-line bg-bg px-3.5 py-2.5"
           placeholder="Tenho interesse neste imóvel."
         />
+      </label>
+
+      <label className="flex items-start gap-2 text-xs text-muted">
+        <input type="checkbox" name="similarAlerts" className="mt-0.5" />
+        <span>Avise-me por e-mail quando surgir um imóvel parecido com este.</span>
       </label>
 
       <label className="flex items-start gap-2 text-xs text-muted">
@@ -49,7 +54,7 @@ export function InterestForm({ propertyId }: { propertyId: string }) {
       )}
       {state.error && <p className="text-xs text-danger">{state.error}</p>}
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="rounded-full">
         {pending ? "Enviando…" : "Tenho interesse"}
       </Button>
     </form>
@@ -79,7 +84,7 @@ function Field({
         name={name}
         type={type}
         required={required}
-        className="h-10 rounded-md border border-line bg-bg px-3"
+        className="h-11 rounded-2xl border border-line bg-bg px-3.5"
       />
       {errors && <span className="text-xs text-danger">{errors[0]}</span>}
     </label>
