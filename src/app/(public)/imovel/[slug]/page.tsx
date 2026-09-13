@@ -343,7 +343,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
 
           {/* No mobile aparece logo após os fatos do imóvel, não só no fim da
               página inteira — no desktop volta pra coluna lateral normal. */}
-          <aside className="order-first -mt-[479px] flex h-fit scale-[1.35] -translate-x-[135px] flex-col gap-4 rounded-2xl bg-surface-2 p-6 lg:sticky lg:top-24 lg:order-none">
+          <aside className="order-first flex h-fit flex-col gap-4 rounded-2xl bg-surface-2 p-6 lg:sticky lg:top-24 lg:order-none lg:-mt-[479px] lg:origin-left lg:scale-[1.35] lg:-translate-x-[135px]">
             <h2 className="text-lg">Contatar anunciante</h2>
             <InterestForm propertyId={property.id} />
 
