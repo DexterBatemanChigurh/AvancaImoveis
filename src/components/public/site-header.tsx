@@ -17,35 +17,39 @@ const NAV_LINKS = [
 ];
 
 /**
- * Header do site público. Só na home ele nasce transparente/sobreposto ao
- * hero e ganha fundo sólido com blur ao rolar — nas demais páginas (sem
- * hero por trás) ele já nasce sólido e em fluxo normal, sem `fixed`, pra
- * não exigir padding-top artificial em toda página existente.
+ * Header do site público. Nasce transparente/sobreposto quando a página
+ * já abre com uma foto grande logo no topo (home e página do imóvel — essa
+ * segunda agora que a galeria ficou colada na borda) e ganha fundo sólido
+ * com blur ao rolar. Nas demais páginas (sem foto por trás) já nasce
+ * sólido e em fluxo normal, sem `fixed`, pra não exigir padding-top
+ * artificial em toda página existente.
  */
 export function SiteHeader() {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const [scrolled, setScrolled] = useState(!isHome);
+  const isPropertyPage = pathname?.startsWith("/imovel/") ?? false;
+  const overlayEligible = isHome || isPropertyPage;
+  const [scrolled, setScrolled] = useState(!overlayEligible);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (!isHome) return;
+    if (!overlayEligible) return;
     function onScroll() {
       setScrolled(window.scrollY > 64);
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
+  }, [overlayEligible]);
 
-  const overlay = isHome && !scrolled && !mobileOpen;
+  const overlay = overlayEligible && !scrolled && !mobileOpen;
 
   return (
     <header
       className={cn(
         "z-40 w-full transition-[background-color,border-color,backdrop-filter] duration-500",
-        isHome ? "fixed inset-x-0 top-0" : "relative border-b border-line bg-surface",
-        isHome && (overlay ? "border-b border-transparent bg-transparent" : "border-b border-line bg-surface/90 backdrop-blur-md"),
+        overlayEligible ? "fixed inset-x-0 top-0" : "relative border-b border-line bg-surface",
+        overlayEligible && (overlay ? "border-b border-transparent bg-transparent" : "border-b border-line bg-surface/90 backdrop-blur-md"),
       )}
     >
       <div className="container flex h-20 items-center justify-between">

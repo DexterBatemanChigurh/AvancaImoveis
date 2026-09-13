@@ -31,6 +31,15 @@ export function formatDate(value: Date | string | null | undefined) {
   });
 }
 
+/** "há 3 dias" / "hoje" — usado no selo de "publicado/atualizado há" do imóvel. */
+export function formatRelativeDays(value: Date | string | null | undefined): string | null {
+  if (!value) return null;
+  const d = typeof value === "string" ? new Date(value) : value;
+  const days = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "hoje";
+  return days === 1 ? "1 dia" : `${days} dias`;
+}
+
 export function formatDateTime(value: Date | string | null | undefined) {
   if (!value) return "—";
   const d = typeof value === "string" ? new Date(value) : value;

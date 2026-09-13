@@ -3,6 +3,17 @@
 @tailwind utilities;
 
 /*
+  A página nunca deve rolar na horizontal — elementos deslocados com
+  margin/translate negativos (ver imovel/[slug]/page.tsx) podem ultrapassar
+  a borda da tela e criar uma barra de rolagem horizontal indesejada; isso
+  trava esse comportamento sem precisar caçar cada offset manualmente.
+*/
+html,
+body {
+  overflow-x: hidden;
+}
+
+/*
   Scrollbar customizada em todo o site — a padrão do sistema (com as
   setinhas de cima/baixo) ficava feia. Firefox usa scrollbar-width/-color;
   Chrome/Edge/Safari usam os pseudo-elementos ::-webkit-scrollbar-*.
