@@ -47,5 +47,9 @@ export function PropertyMapLeaflet({ lat, lng }: { lat: number; lng: number }) {
     };
   }, [lat, lng]);
 
-  return <div ref={containerRef} className="h-full w-full" />;
+  // "isolate": o Leaflet usa z-index internos altos (controles chegam a
+  // 1000) sem isolar o próprio container num contexto de empilhamento —
+  // sem isso, esses valores escapam e aparecem por cima de QUALQUER coisa
+  // com z-index menor na página (ex.: o lightbox de fotos, z-50).
+  return <div ref={containerRef} className="isolate h-full w-full" />;
 }
