@@ -19,7 +19,9 @@ import {
 import { getHeroImageSrc } from "@/lib/hero-image";
 
 export const metadata: Metadata = {
-  title: "Avança Imóveis — Imóveis selecionados em Frutal, MG",
+  // "absolute": ignora o template "%s · Avança Imóveis" do layout raiz —
+  // esse título já é o nome completo da marca, sem precisar do sufixo.
+  title: { absolute: "Avança Imóveis — Imóveis selecionados em Frutal, MG" },
   description:
     "Uma seleção exclusiva de imóveis à venda em Frutal e região, escolhidos para diferentes formas de viver.",
 };

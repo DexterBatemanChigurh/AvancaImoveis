@@ -162,10 +162,11 @@ export default async function PropertyPage({ params }: { params: Params }) {
               href={waHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="pointer-events-auto flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-xs font-semibold text-bg shadow-sm transition-opacity hover:opacity-90"
+              aria-label="Conversar agora"
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center gap-1.5 rounded-full bg-ink text-xs font-semibold text-bg shadow-sm transition-opacity hover:opacity-90 sm:h-auto sm:w-auto sm:px-3.5 sm:py-1.5"
             >
-              <MessageCircle className="h-3.5 w-3.5" />
-              Conversar agora
+              <MessageCircle className="h-3.5 w-3.5 shrink-0" />
+              <span className="hidden sm:inline">Conversar agora</span>
             </a>
           </div>
           <PropertyGallery title={property.title} photos={property.photos} />
