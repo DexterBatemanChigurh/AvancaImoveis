@@ -9,7 +9,10 @@ services:
     runtime: node
     plan: free
     buildCommand: npm install && npm run build
-    startCommand: npm start
+    # Aplica migrations pendentes antes de subir o servidor — sem isso, uma
+    # migration só rodada localmente nunca chega no banco de produção e a
+    # próxima query que tocar a coluna nova quebra com exceção no servidor.
+    startCommand: npm run db:migrate && npm start
     envVars:
       # Preenchido automaticamente pelo Render com a connection string
       # interna do banco acima — não precisa mexer.
