@@ -38,7 +38,6 @@ export function PropertyCard({ property }: Props) {
               title={property.title}
               photos={property.photos}
               badges={badges}
-              aspectClassName="aspect-[4/5]"
             />
           </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />

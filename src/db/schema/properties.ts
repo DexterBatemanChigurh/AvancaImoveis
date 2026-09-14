@@ -10,7 +10,12 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
-import { timestamps, listingType, propertyKind, propertyStatus } from "./_shared";
+import {
+  timestamps,
+  listingType,
+  propertyKind,
+  propertyStatus,
+} from "./_shared";
 import { owners } from "./owners";
 
 /**
@@ -56,16 +61,32 @@ export const properties = pgTable("properties", {
 
   // Conteúdo editorial
   description: text("description"),
-  features: text("features").array().notNull().default(sql`'{}'::text[]`),
-  highlights: text("highlights").array().notNull().default(sql`'{}'::text[]`),
+  features: text("features")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  // Separado de `features` pra permitir a aba "Condomínio" na página pública.
+  condoFeatures: text("condo_features")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  highlights: text("highlights")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
   // Fase 1: pontos da vizinhança como texto livre. Pode virar tabela própria depois.
-  neighborhood: text("neighborhood").array().notNull().default(sql`'{}'::text[]`),
+  neighborhood: text("neighborhood")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
 
   // Métrica alimentada pelos acessos ao link público (proposta §6)
   viewsCount: integer("views_count").notNull().default(0),
 
   // Captação / proprietário (interno)
-  ownerId: uuid("owner_id").references(() => owners.id, { onDelete: "set null" }),
+  ownerId: uuid("owner_id").references(() => owners.id, {
+    onDelete: "set null",
+  }),
   listingType: listingType("listing_type"),
   listingStart: date("listing_start"),
   listingEnd: date("listing_end"),
@@ -143,10 +164,15 @@ export const propertyViews = pgTable(
       .notNull()
       .references(() => properties.id, { onDelete: "cascade" }),
     ipHash: text("ip_hash").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => ({
-    unique: uniqueIndex("property_views_property_ip_unique").on(t.propertyId, t.ipHash),
+    unique: uniqueIndex("property_views_property_ip_unique").on(
+      t.propertyId,
+      t.ipHash,
+    ),
   }),
 );
 

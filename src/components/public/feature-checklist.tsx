@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 
 const VISIBLE_BY_DEFAULT = 6;
 
@@ -18,7 +18,7 @@ export function FeatureChecklist({ items }: { items: string[] }) {
       <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
         {visible.map((item) => (
           <span key={item} className="flex items-center gap-2 text-sm">
-            <Check className="h-4 w-4 shrink-0 text-ok" />
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-ok" />
             {item}
           </span>
         ))}

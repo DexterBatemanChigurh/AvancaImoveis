@@ -21,6 +21,18 @@ export function formatArea(m2: number | null | undefined) {
   return `${NUM.format(m2)} m²`;
 }
 
+/** Início do mês atual em horário de Brasília, independente do fuso do servidor. */
+export function startOfMonthBrasilia(): Date {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+  const year = parts.find((p) => p.type === "year")!.value;
+  const month = parts.find((p) => p.type === "month")!.value;
+  return new Date(`${year}-${month}-01T00:00:00-03:00`);
+}
+
 export function formatDate(value: Date | string | null | undefined) {
   if (!value) return "—";
   const d = typeof value === "string" ? new Date(value) : value;

@@ -4,15 +4,14 @@ import { and, count, eq, gte, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { clients, deals, properties, stages, visits } from "@/db/schema";
+import { startOfMonthBrasilia } from "@/lib/format";
 
 /**
  * Indicadores do dashboard (proposta §6).
  * Fase 1 entrega a base; os cálculos de funil ganham profundidade na Fase 2/3.
  */
 export async function getDashboardMetrics() {
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  const startOfMonth = startOfMonthBrasilia();
 
   const [
     clientsTotal,

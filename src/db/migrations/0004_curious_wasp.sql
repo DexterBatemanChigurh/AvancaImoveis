@@ -1,0 +1,1 @@
+ALTER TABLE "properties" ADD COLUMN "condo_features" text[] DEFAULT '{}'::text[] NOT NULL;

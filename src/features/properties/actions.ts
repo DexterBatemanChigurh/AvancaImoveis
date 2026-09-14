@@ -14,7 +14,11 @@ import { geocodeAddressCascade } from "@/lib/geocode";
 import { buildPropertySlug } from "@/lib/slug";
 import { propertyFormSchema } from "./schema";
 
-type ActionState = { ok: boolean; error?: string; fieldErrors?: Record<string, string[]> };
+type ActionState = {
+  ok: boolean;
+  error?: string;
+  fieldErrors?: Record<string, string[]>;
+};
 
 /** Campos "uma por linha" chegam como texto; viram array aqui. */
 function lines(formData: FormData, name: string): string[] {
@@ -29,6 +33,7 @@ function parseForm(formData: FormData) {
   return propertyFormSchema.safeParse({
     ...raw,
     features: lines(formData, "features"),
+    condoFeatures: lines(formData, "condoFeatures"),
     highlights: lines(formData, "highlights"),
     neighborhood: lines(formData, "neighborhood"),
     hideExactAddress: formData.get("hideExactAddress") === "on",
@@ -107,7 +112,9 @@ export async function updateProperty(
       ...toColumns(v),
       ...coords,
       updatedAt: new Date(),
-      publishedAt: isNewlyPublished ? new Date() : current?.publishedAt ?? null,
+      publishedAt: isNewlyPublished
+        ? new Date()
+        : (current?.publishedAt ?? null),
     })
     .where(eq(properties.id, id));
 
@@ -146,8 +153,10 @@ async function resolveCoordinates(
 ): Promise<{ latitude: number | null; longitude: number | null }> {
   // (0, 0) não é uma coordenada real de nada no Brasil — trata como "sem
   // coordenada" pra nunca ficar preso nela (resíduo de um bug já corrigido).
-  const isRealCoord = (lat: number | null | undefined, lng: number | null | undefined) =>
-    lat != null && lng != null && !(lat === 0 && lng === 0);
+  const isRealCoord = (
+    lat: number | null | undefined,
+    lng: number | null | undefined,
+  ) => lat != null && lng != null && !(lat === 0 && lng === 0);
 
   if (!v.forceGeocode) {
     if (isRealCoord(v.latitude, v.longitude)) {
@@ -199,6 +208,7 @@ function toColumns(v: ReturnType<typeof propertyFormSchema.parse>) {
     parkingSpots: v.parkingSpots,
     description: v.description || null,
     features: v.features,
+    condoFeatures: v.condoFeatures,
     highlights: v.highlights,
     neighborhood: v.neighborhood,
     ownerId: v.ownerId || null,

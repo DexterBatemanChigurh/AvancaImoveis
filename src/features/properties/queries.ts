@@ -19,6 +19,7 @@ import {
 import { db } from "@/db";
 import { properties, propertyPhotos, propertyViews, type Property } from "@/db/schema";
 import { MAX_PHOTOS_PER_PROPERTY } from "@/lib/constants";
+import { startOfMonthBrasilia } from "@/lib/format";
 
 export type CatalogSort = "recentes" | "menor-preco" | "maior-preco";
 
@@ -140,9 +141,7 @@ export async function listFeaturedProperties(limit = 3) {
  * `properties.views_count`, que é um total acumulado desde sempre).
  */
 export async function listMostViewedThisMonth(limit = 1) {
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  const startOfMonth = startOfMonthBrasilia();
 
   const ranked = await db
     .select({ propertyId: propertyViews.propertyId, views: count() })

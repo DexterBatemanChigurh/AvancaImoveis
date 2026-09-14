@@ -17,8 +17,8 @@ export function PropertyCardMedia({
   title: string;
   photos: Photo[];
   badges: string[];
-  /** Proporção da moldura — cards do catálogo usam algo mais quadrado, a
-   * home usa um recorte mais editorial/vertical (ver property-card.tsx). */
+  /** Proporção da moldura — cards do catálogo usam o padrão (4/3,
+   * horizontal), outros usos podem sobrescrever com um recorte diferente. */
   aspectClassName?: string;
 }) {
   const [active, setActive] = useState(0);

@@ -46,7 +46,7 @@ export function Categories({ categories }: { categories: CategoryOverview[] }) {
                   <span className="text-sm font-semibold uppercase tracking-wide text-white sm:text-base">
                     {PROPERTY_KIND_LABELS[cat.kind]}
                   </span>
-                  <ArrowUpRight className="h-4 w-4 -translate-x-1 translate-y-1 text-white opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100" />
+                  <ArrowUpRight className="h-4 w-4 -translate-x-1 translate-y-1 text-white opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:translate-y-0 group-focus-visible:opacity-100" />
                 </span>
                 <span className="text-xs text-white/75">
                   {cat.total} imóve{cat.total > 1 ? "is" : "l"}

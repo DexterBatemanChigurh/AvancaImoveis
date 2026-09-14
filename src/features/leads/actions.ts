@@ -2,7 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -14,6 +14,7 @@ import {
   searchAlerts,
   stages,
 } from "@/db/schema";
+import { PUBLIC_PROPERTY_STATUSES } from "@/lib/constants";
 import { env, features } from "@/lib/env";
 import { getClientIp } from "@/lib/request-ip";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -51,7 +52,10 @@ export async function submitInterest(
   const v = parsed.data;
 
   const property = await db.query.properties.findFirst({
-    where: eq(properties.id, v.propertyId),
+    where: and(
+      eq(properties.id, v.propertyId),
+      inArray(properties.status, [...PUBLIC_PROPERTY_STATUSES]),
+    ),
     columns: {
       id: true,
       title: true,

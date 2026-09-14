@@ -8,7 +8,10 @@ import { MAX_PHOTOS_PER_PROPERTY } from "@/lib/constants";
  * campo numérico opcional viraria zero silenciosamente.
  */
 function optionalNumber(schema: z.ZodNumber) {
-  return z.preprocess((v) => (v === "" || v == null ? undefined : v), schema.optional());
+  return z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    schema.optional(),
+  );
 }
 
 /** Validação do formulário de imóvel (painel). Compartilhada por client e server. */
@@ -31,7 +34,11 @@ export const propertyFormSchema = z.object({
   // rejeitar em silêncio por causa de maiúscula/espaço.
   state: z.preprocess(
     (v) => (typeof v === "string" ? v.trim().toUpperCase() : v),
-    z.string().length(2, "Use a sigla do estado, ex.: MG.").optional().or(z.literal("")),
+    z
+      .string()
+      .length(2, "Use a sigla do estado, ex.: MG.")
+      .optional()
+      .or(z.literal("")),
   ),
   zipCode: z.string().optional(),
   hideExactAddress: z.coerce.boolean().default(false),
@@ -50,6 +57,7 @@ export const propertyFormSchema = z.object({
 
   description: z.string().optional(),
   features: z.array(z.string()).max(60).default([]),
+  condoFeatures: z.array(z.string()).max(60).default([]),
   highlights: z.array(z.string()).max(30).default([]),
   neighborhood: z.array(z.string()).max(30).default([]),
 

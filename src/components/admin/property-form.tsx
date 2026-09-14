@@ -13,17 +13,16 @@ import {
 import { LocationPicker } from "@/components/admin/location-picker";
 import { Button } from "@/components/ui/button";
 import type { Owner, Property } from "@/db/schema";
-import {
-  PROPERTY_KIND_LABELS,
-  PROPERTY_STATUS_LABELS,
-} from "@/lib/constants";
+import { PROPERTY_KIND_LABELS, PROPERTY_STATUS_LABELS } from "@/lib/constants";
 
 type CepStatus = "idle" | "loading" | "found" | "not-found" | "error";
 
 /** Formata "38200000" -> "38200-000" enquanto digita. */
 function formatCep(raw: string) {
   const digits = raw.replace(/\D/g, "").slice(0, 8);
-  return digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
+  return digits.length > 5
+    ? `${digits.slice(0, 5)}-${digits.slice(5)}`
+    : digits;
 }
 
 type ActionState = {
@@ -73,8 +72,10 @@ export function PropertyForm({
         setCepStatus("not-found");
         return;
       }
-      if (streetRef.current) streetRef.current.value = data.logradouro || streetRef.current.value;
-      if (districtRef.current) districtRef.current.value = data.bairro || districtRef.current.value;
+      if (streetRef.current)
+        streetRef.current.value = data.logradouro || streetRef.current.value;
+      if (districtRef.current)
+        districtRef.current.value = data.bairro || districtRef.current.value;
       if (cityRef.current) cityRef.current.value = data.localidade || "";
       if (stateRef.current) stateRef.current.value = data.uf || "";
       setCepStatus("found");
@@ -104,61 +105,132 @@ export function PropertyForm({
 
       <Fieldset legend="Identificação">
         <Row>
-          <Text name="title" label="Título" defaultValue={p?.title} required
-            errors={state.fieldErrors?.title} />
-          <Text name="code" label="Código interno" defaultValue={p?.code} required
-            errors={state.fieldErrors?.code} />
+          <Text
+            name="title"
+            label="Título"
+            defaultValue={p?.title}
+            required
+            errors={state.fieldErrors?.title}
+          />
+          <Text
+            name="code"
+            label="Código interno"
+            defaultValue={p?.code}
+            required
+            errors={state.fieldErrors?.code}
+          />
         </Row>
         <Row>
-          <Select name="status" label="Status" defaultValue={p?.status ?? "rascunho"}
-            options={Object.entries(PROPERTY_STATUS_LABELS)} />
-          <Select name="kind" label="Tipo" defaultValue={p?.kind ?? "casa"}
-            options={Object.entries(PROPERTY_KIND_LABELS)} />
+          <Select
+            name="status"
+            label="Status"
+            defaultValue={p?.status ?? "rascunho"}
+            options={Object.entries(PROPERTY_STATUS_LABELS)}
+          />
+          <Select
+            name="kind"
+            label="Tipo"
+            defaultValue={p?.kind ?? "casa"}
+            options={Object.entries(PROPERTY_KIND_LABELS)}
+          />
         </Row>
       </Fieldset>
 
       <Fieldset legend="Valores">
         <Row>
-          <Text name="salePrice" label="Valor de venda (R$)" type="number"
-            defaultValue={p?.salePrice ?? ""} required
-            errors={state.fieldErrors?.salePrice} />
-          <Text name="condoFee" label="Condomínio (R$)" type="number"
-            defaultValue={p?.condoFee ?? ""} errors={state.fieldErrors?.condoFee} />
-          <Text name="iptuYearly" label="IPTU/ano (R$)" type="number"
-            defaultValue={p?.iptuYearly ?? ""} errors={state.fieldErrors?.iptuYearly} />
+          <Text
+            name="salePrice"
+            label="Valor de venda (R$)"
+            type="number"
+            defaultValue={p?.salePrice ?? ""}
+            required
+            errors={state.fieldErrors?.salePrice}
+          />
+          <Text
+            name="condoFee"
+            label="Condomínio (R$)"
+            type="number"
+            defaultValue={p?.condoFee ?? ""}
+            errors={state.fieldErrors?.condoFee}
+          />
+          <Text
+            name="iptuYearly"
+            label="IPTU/ano (R$)"
+            type="number"
+            defaultValue={p?.iptuYearly ?? ""}
+            errors={state.fieldErrors?.iptuYearly}
+          />
         </Row>
       </Fieldset>
 
       <Fieldset legend="Endereço">
         <Row>
-          <Text name="zipCode" label="CEP" defaultValue={p?.zipCode ?? ""}
-            placeholder="38200-000" onChange={handleCepChange} onBlur={handleCepBlur}
+          <Text
+            name="zipCode"
+            label="CEP"
+            defaultValue={p?.zipCode ?? ""}
+            placeholder="38200-000"
+            onChange={handleCepChange}
+            onBlur={handleCepBlur}
             errors={state.fieldErrors?.zipCode}
             hint={
-              cepStatus === "loading" ? "Buscando endereço…"
-              : cepStatus === "found" ? "✓ Endereço preenchido — confira e complete o número."
-              : cepStatus === "not-found" ? "CEP não encontrado, preencha manualmente."
-              : cepStatus === "error" ? "Não consegui consultar o CEP agora, preencha manualmente."
-              : undefined
-            } />
+              cepStatus === "loading"
+                ? "Buscando endereço…"
+                : cepStatus === "found"
+                  ? "✓ Endereço preenchido — confira e complete o número."
+                  : cepStatus === "not-found"
+                    ? "CEP não encontrado, preencha manualmente."
+                    : cepStatus === "error"
+                      ? "Não consegui consultar o CEP agora, preencha manualmente."
+                      : undefined
+            }
+          />
         </Row>
         <Row>
-          <Text name="street" label="Logradouro" defaultValue={p?.street ?? ""}
-            inputRef={streetRef} errors={state.fieldErrors?.street} />
-          <Text name="number" label="Número" defaultValue={p?.number ?? ""}
-            inputRef={numberRef} errors={state.fieldErrors?.number} />
+          <Text
+            name="street"
+            label="Logradouro"
+            defaultValue={p?.street ?? ""}
+            inputRef={streetRef}
+            errors={state.fieldErrors?.street}
+          />
+          <Text
+            name="number"
+            label="Número"
+            defaultValue={p?.number ?? ""}
+            inputRef={numberRef}
+            errors={state.fieldErrors?.number}
+          />
         </Row>
         <Row>
-          <Text name="district" label="Bairro" defaultValue={p?.district ?? ""}
-            inputRef={districtRef} errors={state.fieldErrors?.district} />
-          <Text name="city" label="Cidade" defaultValue={p?.city ?? ""}
-            inputRef={cityRef} errors={state.fieldErrors?.city} />
-          <Text name="state" label="UF" defaultValue={p?.state ?? ""}
-            inputRef={stateRef} errors={state.fieldErrors?.state} />
+          <Text
+            name="district"
+            label="Bairro"
+            defaultValue={p?.district ?? ""}
+            inputRef={districtRef}
+            errors={state.fieldErrors?.district}
+          />
+          <Text
+            name="city"
+            label="Cidade"
+            defaultValue={p?.city ?? ""}
+            inputRef={cityRef}
+            errors={state.fieldErrors?.city}
+          />
+          <Text
+            name="state"
+            label="UF"
+            defaultValue={p?.state ?? ""}
+            inputRef={stateRef}
+            errors={state.fieldErrors?.state}
+          />
         </Row>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="hideExactAddress"
-            defaultChecked={p?.hideExactAddress ?? false} />
+          <input
+            type="checkbox"
+            name="hideExactAddress"
+            defaultChecked={p?.hideExactAddress ?? false}
+          />
           Ocultar endereço exato no catálogo (mostra só o bairro)
         </label>
 
@@ -169,16 +241,21 @@ export function PropertyForm({
               ? "Ajuste o pino se o endereço não caiu no lugar certo — muitas ruas de cidades menores não estão no mapa base, então o ponto pode sair aproximado."
               : "Ainda sem coordenada. Ao salvar, tentamos localizar pelo endereço automaticamente — ou clique no mapa abaixo pra marcar o ponto certo você mesmo."}
           </p>
-          <LocationPicker defaultLat={p?.latitude ?? null} defaultLng={p?.longitude ?? null} />
+          <LocationPicker
+            defaultLat={p?.latitude ?? null}
+            defaultLng={p?.longitude ?? null}
+          />
           {(state.fieldErrors?.latitude || state.fieldErrors?.longitude) && (
             <p className="text-xs text-danger">
-              {state.fieldErrors?.latitude?.[0] || state.fieldErrors?.longitude?.[0]}
+              {state.fieldErrors?.latitude?.[0] ||
+                state.fieldErrors?.longitude?.[0]}
             </p>
           )}
           {p && (
             <label className="flex items-center gap-2 text-xs text-muted">
               <input type="checkbox" name="forceGeocode" />
-              Ignorar o pino acima e tentar localizar de novo pelo endereço ao salvar
+              Ignorar o pino acima e tentar localizar de novo pelo endereço ao
+              salvar
             </label>
           )}
         </div>
@@ -186,59 +263,140 @@ export function PropertyForm({
 
       <Fieldset legend="Características">
         <Row>
-          <Text name="bedrooms" label="Quartos" type="number" defaultValue={p?.bedrooms ?? 0} />
-          <Text name="suites" label="Suítes" type="number" defaultValue={p?.suites ?? 0} />
-          <Text name="bathrooms" label="Banheiros" type="number" defaultValue={p?.bathrooms ?? 0} />
-          <Text name="parkingSpots" label="Vagas" type="number" defaultValue={p?.parkingSpots ?? 0} />
+          <Text
+            name="bedrooms"
+            label="Quartos"
+            type="number"
+            defaultValue={p?.bedrooms ?? 0}
+          />
+          <Text
+            name="suites"
+            label="Suítes"
+            type="number"
+            defaultValue={p?.suites ?? 0}
+          />
+          <Text
+            name="bathrooms"
+            label="Banheiros"
+            type="number"
+            defaultValue={p?.bathrooms ?? 0}
+          />
+          <Text
+            name="parkingSpots"
+            label="Vagas"
+            type="number"
+            defaultValue={p?.parkingSpots ?? 0}
+          />
         </Row>
         <Row>
-          <Text name="usableArea" label="Área útil (m²)" type="number" defaultValue={p?.usableArea ?? ""}
-            errors={state.fieldErrors?.usableArea} />
-          <Text name="totalArea" label="Área total (m²)" type="number" defaultValue={p?.totalArea ?? ""}
-            errors={state.fieldErrors?.totalArea} />
+          <Text
+            name="usableArea"
+            label="Área útil (m²)"
+            type="number"
+            defaultValue={p?.usableArea ?? ""}
+            errors={state.fieldErrors?.usableArea}
+          />
+          <Text
+            name="totalArea"
+            label="Área total (m²)"
+            type="number"
+            defaultValue={p?.totalArea ?? ""}
+            errors={state.fieldErrors?.totalArea}
+          />
         </Row>
       </Fieldset>
 
       <Fieldset legend="Descrição e listas">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium">Descrição</span>
-          <textarea name="description" rows={5} defaultValue={p?.description ?? ""}
-            className="rounded-md border border-line bg-bg px-3 py-2" />
+          <textarea
+            name="description"
+            rows={5}
+            defaultValue={p?.description ?? ""}
+            className="rounded-md border border-line bg-bg px-3 py-2"
+          />
         </label>
-        <Lines name="features" label="Características (uma por linha)"
-          defaultValue={p?.features ?? []} />
-        <Lines name="highlights" label="Diferenciais (uma por linha)"
-          defaultValue={p?.highlights ?? []} />
-        <Lines name="neighborhood" label="Na região (uma por linha)"
-          defaultValue={p?.neighborhood ?? []} />
+        <Lines
+          name="features"
+          label="Características do imóvel (uma por linha)"
+          defaultValue={p?.features ?? []}
+        />
+        <Lines
+          name="condoFeatures"
+          label="Características do condomínio (uma por linha)"
+          defaultValue={p?.condoFeatures ?? []}
+        />
+        <Lines
+          name="highlights"
+          label="Diferenciais (uma por linha)"
+          defaultValue={p?.highlights ?? []}
+        />
+        <Lines
+          name="neighborhood"
+          label="Na região (uma por linha)"
+          defaultValue={p?.neighborhood ?? []}
+        />
       </Fieldset>
 
       <Fieldset legend="Captação (interno)">
         <Row>
-          <Select name="ownerId" label="Proprietário" defaultValue={p?.ownerId ?? ""}
-            options={[["", "—"], ...owners.map((o) => [o.id, o.name] as [string, string])]} />
-          <Select name="listingType" label="Tipo de captação" defaultValue={p?.listingType ?? ""}
-            options={[["", "—"], ["exclusiva", "Exclusiva"], ["aberta", "Aberta"]]} />
+          <Select
+            name="ownerId"
+            label="Proprietário"
+            defaultValue={p?.ownerId ?? ""}
+            options={[
+              ["", "—"],
+              ...owners.map((o) => [o.id, o.name] as [string, string]),
+            ]}
+          />
+          <Select
+            name="listingType"
+            label="Tipo de captação"
+            defaultValue={p?.listingType ?? ""}
+            options={[
+              ["", "—"],
+              ["exclusiva", "Exclusiva"],
+              ["aberta", "Aberta"],
+            ]}
+          />
         </Row>
         <Row>
-          <Text name="listingStart" label="Início do contrato" type="date"
-            defaultValue={p?.listingStart ?? ""} />
-          <Text name="listingEnd" label="Fim do contrato" type="date"
-            defaultValue={p?.listingEnd ?? ""} />
-          <Text name="commissionPct" label="Comissão (%)" type="number"
-            defaultValue={p?.commissionPct ?? ""} errors={state.fieldErrors?.commissionPct} />
+          <Text
+            name="listingStart"
+            label="Início do contrato"
+            type="date"
+            defaultValue={p?.listingStart ?? ""}
+          />
+          <Text
+            name="listingEnd"
+            label="Fim do contrato"
+            type="date"
+            defaultValue={p?.listingEnd ?? ""}
+          />
+          <Text
+            name="commissionPct"
+            label="Comissão (%)"
+            type="number"
+            defaultValue={p?.commissionPct ?? ""}
+            errors={state.fieldErrors?.commissionPct}
+          />
         </Row>
       </Fieldset>
 
       <div className="flex flex-col gap-2">
         <div className="flex gap-3">
           <Button type="submit" disabled={pending}>
-            {pending ? "Salvando…" : property ? "Salvar alterações" : "Criar imóvel"}
+            {pending
+              ? "Salvando…"
+              : property
+                ? "Salvar alterações"
+                : "Criar imóvel"}
           </Button>
         </div>
         {pending && (
           <p className="text-xs text-muted">
-            Localizando o endereço no mapa — pode levar alguns segundos na primeira vez.
+            Localizando o endereço no mapa — pode levar alguns segundos na
+            primeira vez.
           </p>
         )}
       </div>
@@ -248,7 +406,13 @@ export function PropertyForm({
 
 /* --------------------------- campos auxiliares --------------------------- */
 
-function Fieldset({ legend, children }: { legend: string; children: ReactNode }) {
+function Fieldset({
+  legend,
+  children,
+}: {
+  legend: string;
+  children: ReactNode;
+}) {
   return (
     <fieldset className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <legend className="px-1 font-mono text-xs uppercase tracking-wide text-muted">
@@ -260,7 +424,11 @@ function Fieldset({ legend, children }: { legend: string; children: ReactNode })
 }
 
 function Row({ children }: { children: ReactNode }) {
-  return <div className="flex flex-wrap gap-4 [&>*]:min-w-[8rem] [&>*]:flex-1">{children}</div>;
+  return (
+    <div className="flex flex-wrap gap-4 [&>*]:min-w-[8rem] [&>*]:flex-1">
+      {children}
+    </div>
+  );
 }
 
 function Text({

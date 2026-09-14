@@ -55,6 +55,7 @@ function Tile({ property, tall = false }: { property: FeaturedProperty; tall?: b
           src={publicUrl(cover.storageKey)}
           alt={property.title}
           fill
+          priority={tall}
           sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
         />
@@ -70,7 +71,7 @@ function Tile({ property, tall = false }: { property: FeaturedProperty; tall?: b
           <span className="text-lg font-medium text-white sm:text-xl">
             {formatBRL(property.salePrice)}
           </span>
-          <span className="flex items-center gap-1.5 text-sm font-medium text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <span className="flex items-center gap-1.5 text-sm font-medium text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
             Ver imóvel
             <ArrowRight className="h-4 w-4" />
           </span>

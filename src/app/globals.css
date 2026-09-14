@@ -7,10 +7,16 @@
   margin/translate negativos (ver imovel/[slug]/page.tsx) podem ultrapassar
   a borda da tela e criar uma barra de rolagem horizontal indesejada; isso
   trava esse comportamento sem precisar caçar cada offset manualmente.
+  `clip` (não `hidden`) de propósito: `hidden` força o navegador a tratar
+  html/body como um container de scroll próprio (overflow-y vira "auto"
+  por baixo dos panos), o que quebra `position: sticky` de qualquer filho
+  — foi exatamente isso que impedia o card de contato de acompanhar o
+  scroll na página do imóvel. `clip` bloqueia o overflow sem esse efeito
+  colateral.
 */
 html,
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /*
