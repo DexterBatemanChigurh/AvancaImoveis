@@ -41,13 +41,21 @@ export function PropertyGallery({ title, photos }: { title: string; photos: Phot
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxIndex]);
 
-  // Trava o scroll da página por trás enquanto a foto em tela cheia está aberta.
+  // Trava o scroll da página por trás enquanto a foto em tela cheia está
+  // aberta — precisa travar tanto <html> quanto <body> porque, dependendo
+  // do navegador/CSS, qualquer um dos dois pode ser o elemento que rola de
+  // verdade; travar só um deixa o outro ainda deslizando por baixo.
   useEffect(() => {
     if (lightboxIndex == null) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtml = html.style.overflow;
+    const previousBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = previous;
+      html.style.overflow = previousHtml;
+      body.style.overflow = previousBody;
     };
   }, [lightboxIndex]);
 
@@ -114,7 +122,7 @@ export function PropertyGallery({ title, photos }: { title: string; photos: Phot
             type="button"
             aria-label="Fechar"
             onClick={() => setLightboxIndex(null)}
-            className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+            className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           >
             <X className="h-5 w-5" />
           </button>
