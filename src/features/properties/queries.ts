@@ -17,7 +17,12 @@ import {
 } from "drizzle-orm";
 
 import { db } from "@/db";
-import { properties, propertyPhotos, propertyViews, type Property } from "@/db/schema";
+import {
+  properties,
+  propertyPhotos,
+  propertyViews,
+  type Property,
+} from "@/db/schema";
 import { MAX_PHOTOS_PER_PROPERTY } from "@/lib/constants";
 import { startOfMonthBrasilia } from "@/lib/format";
 
@@ -124,7 +129,10 @@ export async function listAvailableDistricts(scope?: {
 export async function listFeaturedProperties(limit = 3) {
   return db.query.properties.findMany({
     where: eq(properties.status, "disponivel"),
-    orderBy: [desc(properties.viewsCount)],
+    // Empate em views_count (comum com poucas visitas) sem 2º critério faz
+    // o Postgres devolver uma ordem instável — a seção troca de imóvel a
+    // cada carregamento. publishedAt desfaz o empate de forma consistente.
+    orderBy: [desc(properties.viewsCount), desc(properties.publishedAt)],
     limit,
     with: {
       photos: {
@@ -148,7 +156,10 @@ export async function listMostViewedThisMonth(limit = 1) {
     .from(propertyViews)
     .innerJoin(properties, eq(properties.id, propertyViews.propertyId))
     .where(
-      and(eq(properties.status, "disponivel"), gte(propertyViews.createdAt, startOfMonth)),
+      and(
+        eq(properties.status, "disponivel"),
+        gte(propertyViews.createdAt, startOfMonth),
+      ),
     )
     .groupBy(propertyViews.propertyId)
     .orderBy(desc(count()))
@@ -177,7 +188,11 @@ export async function listMostViewedThisMonth(limit = 1) {
  * daquele tipo.
  */
 export async function listCategoryOverview(): Promise<
-  Array<{ kind: Property["kind"]; total: number; coverStorageKey: string | null }>
+  Array<{
+    kind: Property["kind"];
+    total: number;
+    coverStorageKey: string | null;
+  }>
 > {
   const totals = await db
     .select({ kind: properties.kind, total: count() })
@@ -199,8 +214,8 @@ export async function listCategoryOverview(): Promise<
     kind,
     total,
     coverStorageKey:
-      mostViewedWithPhotos.find((p) => p.kind === kind && p.photos[0])?.photos[0]?.storageKey ??
-      null,
+      mostViewedWithPhotos.find((p) => p.kind === kind && p.photos[0])
+        ?.photos[0]?.storageKey ?? null,
   }));
 }
 
@@ -208,7 +223,10 @@ export async function listCategoryOverview(): Promise<
 export async function listPublicPropertiesByIds(ids: string[]) {
   if (ids.length === 0) return [];
   return db.query.properties.findMany({
-    where: and(eq(properties.status, "disponivel"), inArray(properties.id, ids)),
+    where: and(
+      eq(properties.status, "disponivel"),
+      inArray(properties.id, ids),
+    ),
     with: {
       photos: {
         orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
@@ -226,7 +244,10 @@ export async function listSimilarProperties(
   current: { id: string; district: string | null; kind: Property["kind"] },
   limit = 4,
 ) {
-  const base = and(eq(properties.status, "disponivel"), ne(properties.id, current.id));
+  const base = and(
+    eq(properties.status, "disponivel"),
+    ne(properties.id, current.id),
+  );
 
   const byDistrict = current.district
     ? await db.query.properties.findMany({
@@ -235,7 +256,10 @@ export async function listSimilarProperties(
         limit,
         with: {
           photos: {
-            orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
+            orderBy: [
+              desc(propertyPhotos.isCover),
+              asc(propertyPhotos.position),
+            ],
             limit: 1,
           },
         },
@@ -245,7 +269,11 @@ export async function listSimilarProperties(
 
   const excludeIds = [current.id, ...byDistrict.map((p) => p.id)];
   const byKind = await db.query.properties.findMany({
-    where: and(base, eq(properties.kind, current.kind), notInArray(properties.id, excludeIds)),
+    where: and(
+      base,
+      eq(properties.kind, current.kind),
+      notInArray(properties.id, excludeIds),
+    ),
     orderBy: [desc(properties.publishedAt)],
     limit: limit - byDistrict.length,
     with: {
@@ -286,11 +314,16 @@ export async function listPublicPropertySlugs() {
  * Recebe o hash pronto (em vez de ler a request aqui) pra ficar fácil de
  * testar e pra não depender de next/headers dentro da camada de dados.
  */
-export async function incrementPropertyViews(id: string, ipHash: string): Promise<void> {
+export async function incrementPropertyViews(
+  id: string,
+  ipHash: string,
+): Promise<void> {
   const [inserted] = await db
     .insert(propertyViews)
     .values({ propertyId: id, ipHash })
-    .onConflictDoNothing({ target: [propertyViews.propertyId, propertyViews.ipHash] })
+    .onConflictDoNothing({
+      target: [propertyViews.propertyId, propertyViews.ipHash],
+    })
     .returning({ id: propertyViews.id });
 
   if (!inserted) return; // já tinha view desse IP nesse imóvel
