@@ -3,10 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CopyLinkButton } from "@/components/admin/copy-link-button";
+import { DeletePropertyButton } from "@/components/admin/delete-property-button";
 import { PropertyForm } from "@/components/admin/property-form";
 import { PropertyPhotos } from "@/components/admin/property-photos";
 import { PropertyStatusBadge } from "@/components/ui/badge";
-import { updateProperty } from "@/features/properties/actions";
+import { deleteProperty, updateProperty } from "@/features/properties/actions";
 import { getPropertyById } from "@/features/properties/queries";
 import { listOwners } from "@/features/owners/queries";
 import { absoluteUrl, propertyPath } from "@/lib/seo";
@@ -25,6 +26,7 @@ export default async function EditPropertyPage({ params }: { params: Params }) {
 
   const publicUrl = absoluteUrl(propertyPath(property.slug));
   const boundAction = updateProperty.bind(null, id);
+  const boundDeleteAction = deleteProperty.bind(null, id);
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,6 +46,10 @@ export default async function EditPropertyPage({ params }: { params: Params }) {
               Ver no site
             </Link>
           )}
+          <DeletePropertyButton
+            action={boundDeleteAction}
+            propertyTitle={property.title}
+          />
         </div>
       </div>
 

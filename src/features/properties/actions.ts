@@ -12,6 +12,7 @@ import { notifyMatchingAlerts } from "@/features/alerts/notify";
 import { emitCatalogChanged } from "@/lib/events";
 import { geocodeAddressCascade } from "@/lib/geocode";
 import { buildPropertySlug } from "@/lib/slug";
+import { deleteFile } from "@/lib/storage/local";
 import { propertyFormSchema } from "./schema";
 
 type ActionState = {
@@ -134,6 +135,39 @@ export async function updateProperty(
   revalidatePath(`/admin/imoveis/${id}`);
   revalidatePath("/imoveis");
   if (current?.slug) revalidatePath(`/imovel/${current.slug}`);
+  emitCatalogChanged();
+  redirect("/admin/imoveis");
+}
+
+/**
+ * Exclui o imóvel e tudo que depende dele. As linhas de fotos/documentos/
+ * visitas/negociações somem sozinhas via `onDelete: cascade` no banco — só
+ * os ARQUIVOS de foto no disco precisam ser apagados à mão antes, porque
+ * o cascade só cuida do banco, não do storage.
+ */
+export async function deleteProperty(
+  id: string,
+  _formData: FormData,
+): Promise<void> {
+  await requireUser();
+
+  const property = await db.query.properties.findFirst({
+    where: eq(properties.id, id),
+    columns: { slug: true },
+    with: { photos: { columns: { storageKey: true, thumbKey: true } } },
+  });
+  if (!property) redirect("/admin/imoveis");
+
+  for (const photo of property.photos) {
+    await deleteFile(photo.storageKey).catch(() => {});
+    if (photo.thumbKey) await deleteFile(photo.thumbKey).catch(() => {});
+  }
+
+  await db.delete(properties).where(eq(properties.id, id));
+
+  revalidatePath("/admin/imoveis");
+  revalidatePath("/imoveis");
+  revalidatePath(`/imovel/${property.slug}`);
   emitCatalogChanged();
   redirect("/admin/imoveis");
 }
