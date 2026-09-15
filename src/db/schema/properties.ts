@@ -83,10 +83,7 @@ export const properties = pgTable("properties", {
   // Métrica alimentada pelos acessos ao link público (proposta §6)
   viewsCount: integer("views_count").notNull().default(0),
 
-  // Captação / proprietário (interno)
-  ownerId: uuid("owner_id").references(() => owners.id, {
-    onDelete: "set null",
-  }),
+  // Captação (interno). Proprietário(s) agora é N:N — ver property-owners.ts.
   listingType: listingType("listing_type"),
   listingStart: date("listing_start"),
   listingEnd: date("listing_end"),
@@ -128,17 +125,26 @@ export const documentCategories = pgTable("document_categories", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull().unique(),
   position: integer("position").notNull().default(0),
+  active: boolean("active").notNull().default(true),
   ...timestamps,
 });
 
 export type DocumentCategory = typeof documentCategories.$inferSelect;
 
-/** Arquivos anexados ao imóvel, agrupados por categoria. Só aparecem no painel. */
+/**
+ * Arquivos privados anexados a um imóvel e/ou a um proprietário (nunca os
+ * dois vazios ao mesmo tempo — validado na aplicação), agrupados por
+ * categoria. Nunca aparecem no catálogo público — servidos por rota própria
+ * que exige sessão (ver features/documents/).
+ */
 export const propertyDocuments = pgTable("property_documents", {
   id: uuid("id").primaryKey().defaultRandom(),
-  propertyId: uuid("property_id")
-    .notNull()
-    .references(() => properties.id, { onDelete: "cascade" }),
+  propertyId: uuid("property_id").references(() => properties.id, {
+    onDelete: "cascade",
+  }),
+  ownerId: uuid("owner_id").references(() => owners.id, {
+    onDelete: "cascade",
+  }),
   categoryId: uuid("category_id").references(() => documentCategories.id, {
     onDelete: "set null",
   }),

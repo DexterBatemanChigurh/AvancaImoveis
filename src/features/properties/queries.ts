@@ -352,7 +352,7 @@ export async function listAdminProperties(
           orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
           limit: 1,
         },
-        owner: true,
+        owners: { with: { owner: true } },
       },
     }),
     db.select({ n: count() }).from(properties),
@@ -367,7 +367,7 @@ export async function getPropertyById(id: string) {
     with: {
       photos: { orderBy: [asc(propertyPhotos.position)] },
       documents: true,
-      owner: true,
+      owners: { with: { owner: true } },
     },
   });
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireUser } from "@/features/auth/session";
-import { readStoredFile } from "@/lib/storage/local";
+import { readStoredFile } from "@/lib/storage/documents";
 
 const MIME: Record<string, string> = {
   pdf: "application/pdf",
@@ -13,13 +13,15 @@ const MIME: Record<string, string> = {
 
 type Params = Promise<{ path: string[] }>;
 
-// Chave no formato imoveis/<id>/documentos/<arquivo>.<ext> — nunca fotos
-// (essas ficam em /uploads, rota pública). Documento é sempre interno:
-// matrícula, IPTU, contrato de exclusividade etc. — nunca deve ser
-// acessível sem sessão válida, mesmo que a URL vaze.
-const DOCUMENT_KEY = /^imoveis\/[^/]+\/documentos\/[^/]+\.[a-z0-9]+$/i;
+// Chave no formato imoveis/<id>/documentos/<arquivo>.<ext> ou
+// proprietarios/<id>/documentos/<arquivo>.<ext> — nunca fotos (essas ficam
+// no bucket público). Documento é sempre interno: matrícula, IPTU,
+// contrato de exclusividade etc. — nunca deve ser acessível sem sessão
+// válida, mesmo que a URL vaze.
+const DOCUMENT_KEY =
+  /^(imoveis|proprietarios)\/[^/]+\/documentos\/[^/]+\.[a-z0-9]+$/i;
 
-/** Serve documentos de imóveis salvos em disco. Exige sessão — nunca é público. */
+/** Serve documentos privados (bucket Supabase separado). Exige sessão — nunca é público. */
 export async function GET(_request: Request, { params }: { params: Params }) {
   await requireUser();
 
@@ -27,7 +29,10 @@ export async function GET(_request: Request, { params }: { params: Params }) {
   const key = segments.join("/");
 
   if (!DOCUMENT_KEY.test(key)) {
-    return NextResponse.json({ error: "Arquivo não encontrado." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Arquivo não encontrado." },
+      { status: 404 },
+    );
   }
 
   try {
@@ -41,6 +46,9 @@ export async function GET(_request: Request, { params }: { params: Params }) {
       },
     });
   } catch {
-    return NextResponse.json({ error: "Arquivo não encontrado." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Arquivo não encontrado." },
+      { status: 404 },
+    );
   }
 }

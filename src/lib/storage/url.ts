@@ -12,6 +12,8 @@ export const keys = {
     `imoveis/${propertyId}/fotos/${fileId}_thumb.webp`,
   propertyDocument: (propertyId: string, fileId: string, ext: string) =>
     `imoveis/${propertyId}/documentos/${fileId}.${ext}`,
+  ownerDocument: (ownerId: string, fileId: string, ext: string) =>
+    `proprietarios/${ownerId}/documentos/${fileId}.${ext}`,
 };
 
 // process.env direto (não @/lib/env): este arquivo é importado também por

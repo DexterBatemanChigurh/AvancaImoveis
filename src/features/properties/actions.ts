@@ -4,21 +4,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { properties } from "@/db/schema";
+import { properties, propertyOwners } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 import { requireUser } from "@/features/auth/session";
 import { notifyMatchingAlerts } from "@/features/alerts/notify";
+import type { ActionState } from "@/lib/action-state";
 import { geocodeAddressCascade } from "@/lib/geocode";
 import { buildPropertySlug } from "@/lib/slug";
 import { deleteFile } from "@/lib/storage/supabase";
 import { propertyFormSchema } from "./schema";
-
-type ActionState = {
-  ok: boolean;
-  error?: string;
-  fieldErrors?: Record<string, string[]>;
-};
 
 /** Campos "uma por linha" chegam como texto; viram array aqui. */
 function lines(formData: FormData, name: string): string[] {
@@ -36,6 +31,7 @@ function parseForm(formData: FormData) {
     condoFeatures: lines(formData, "condoFeatures"),
     highlights: lines(formData, "highlights"),
     neighborhood: lines(formData, "neighborhood"),
+    ownerIds: formData.getAll("ownerIds"),
     hideExactAddress: formData.get("hideExactAddress") === "on",
     forceGeocode: formData.get("forceGeocode") === "on",
   });
@@ -55,15 +51,19 @@ export async function createProperty(
   const coords = await resolveCoordinates(v, null);
   const slug = buildPropertySlug({ title: v.title, district: v.district });
 
-  const [row] = await db
-    .insert(properties)
-    .values({
-      ...toColumns(v),
-      ...coords,
-      slug,
-      publishedAt: v.status === "disponivel" ? new Date() : null,
-    })
-    .returning({ id: properties.id });
+  const row = await db.transaction(async (tx) => {
+    const [inserted] = await tx
+      .insert(properties)
+      .values({
+        ...toColumns(v),
+        ...coords,
+        slug,
+        publishedAt: v.status === "disponivel" ? new Date() : null,
+      })
+      .returning({ id: properties.id });
+    await syncPropertyOwners(tx, inserted!.id, v.ownerIds);
+    return inserted;
+  });
 
   if (v.status === "disponivel") {
     // Aguarda pra garantir que roda antes do redirect encerrar a resposta —
@@ -105,17 +105,20 @@ export async function updateProperty(
   const coords = await resolveCoordinates(v, current ?? null);
   const isNewlyPublished = v.status === "disponivel" && !current?.publishedAt;
 
-  await db
-    .update(properties)
-    .set({
-      ...toColumns(v),
-      ...coords,
-      updatedAt: new Date(),
-      publishedAt: isNewlyPublished
-        ? new Date()
-        : (current?.publishedAt ?? null),
-    })
-    .where(eq(properties.id, id));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(properties)
+      .set({
+        ...toColumns(v),
+        ...coords,
+        updatedAt: new Date(),
+        publishedAt: isNewlyPublished
+          ? new Date()
+          : (current?.publishedAt ?? null),
+      })
+      .where(eq(properties.id, id));
+    await syncPropertyOwners(tx, id, v.ownerIds);
+  });
 
   if (isNewlyPublished && current?.slug) {
     await notifyMatchingAlerts({
@@ -212,6 +215,24 @@ async function resolveCoordinates(
     : { latitude: null, longitude: null };
 }
 
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/** Substitui todos os vínculos de proprietário do imóvel pelos informados agora. */
+async function syncPropertyOwners(
+  tx: Tx,
+  propertyId: string,
+  ownerIds: string[],
+) {
+  await tx
+    .delete(propertyOwners)
+    .where(eq(propertyOwners.propertyId, propertyId));
+  if (ownerIds.length > 0) {
+    await tx
+      .insert(propertyOwners)
+      .values(ownerIds.map((ownerId) => ({ propertyId, ownerId })));
+  }
+}
+
 /** Mapeia os valores validados para as colunas da tabela. */
 function toColumns(v: ReturnType<typeof propertyFormSchema.parse>) {
   return {
@@ -241,7 +262,6 @@ function toColumns(v: ReturnType<typeof propertyFormSchema.parse>) {
     condoFeatures: v.condoFeatures,
     highlights: v.highlights,
     neighborhood: v.neighborhood,
-    ownerId: v.ownerId || null,
     listingType: v.listingType || null,
     listingStart: v.listingStart || null,
     listingEnd: v.listingEnd || null,

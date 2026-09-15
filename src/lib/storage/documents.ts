@@ -1,31 +1,32 @@
 import "server-only";
 
-import { publicUrl, SUPABASE_STORAGE_BUCKET } from "./url";
 import { supabaseStorageClient } from "./supabase-client";
 
-export { publicUrl, keys } from "./url";
-
 /**
- * Armazenamento de fotos no Supabase Storage (bucket PÚBLICO) — trocado do
- * disco local porque serverless (Vercel) não tem filesystem persistente
- * entre deploys/instâncias. Documentos privados usam um bucket separado —
- * ver lib/storage/documents.ts.
+ * Bucket PRIVADO — matrícula, contrato, documentos do proprietário etc.
+ * Nunca tem URL pública: todo acesso passa pela nossa rota autenticada
+ * (ver app/(admin)/admin/documentos/[...path]/route.ts), que chama
+ * `readStoredFile` só depois de confirmar a sessão com `requireUser()`.
  */
-const bucket = supabaseStorageClient.storage.from(SUPABASE_STORAGE_BUCKET);
+const PRIVATE_BUCKET = "documentos-privados";
+
+const bucket = supabaseStorageClient.storage.from(PRIVATE_BUCKET);
 
 export async function saveFile(
   key: string,
   data: Buffer | Uint8Array,
-): Promise<{ key: string; url: string }> {
+  contentType: string,
+): Promise<{ key: string }> {
   const { error } = await bucket.upload(key, data, {
-    contentType: "image/webp",
+    contentType,
     upsert: true,
   });
-  if (error)
+  if (error) {
     throw new Error(
-      `Falha ao enviar foto pro Supabase Storage: ${error.message}`,
+      `Falha ao enviar documento pro Supabase Storage: ${error.message}`,
     );
-  return { key, url: publicUrl(key) };
+  }
+  return { key };
 }
 
 export async function readStoredFile(key: string): Promise<Buffer> {

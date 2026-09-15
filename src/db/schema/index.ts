@@ -10,6 +10,7 @@ import {
   propertyDocuments,
   propertyPhotos,
 } from "./properties";
+import { propertyOwners } from "./property-owners";
 import { sessions, users } from "./users";
 import { stages } from "./stages";
 import { visits } from "./visits";
@@ -22,6 +23,7 @@ export * from "./clients";
 export * from "./deals";
 export * from "./owners";
 export * from "./properties";
+export * from "./property-owners";
 export * from "./stages";
 export * from "./users";
 export * from "./visits";
@@ -29,18 +31,27 @@ export * from "./visits";
 /* ------------------------------ relations ---------------------------- */
 
 export const ownersRelations = relations(owners, ({ many }) => ({
-  properties: many(properties),
+  properties: many(propertyOwners),
+  documents: many(propertyDocuments),
 }));
 
-export const propertiesRelations = relations(properties, ({ one, many }) => ({
-  owner: one(owners, {
-    fields: [properties.ownerId],
-    references: [owners.id],
-  }),
+export const propertiesRelations = relations(properties, ({ many }) => ({
+  owners: many(propertyOwners),
   photos: many(propertyPhotos),
   documents: many(propertyDocuments),
   deals: many(dealProperties),
   visits: many(visits),
+}));
+
+export const propertyOwnersRelations = relations(propertyOwners, ({ one }) => ({
+  property: one(properties, {
+    fields: [propertyOwners.propertyId],
+    references: [properties.id],
+  }),
+  owner: one(owners, {
+    fields: [propertyOwners.ownerId],
+    references: [owners.id],
+  }),
 }));
 
 export const propertyPhotosRelations = relations(propertyPhotos, ({ one }) => ({
@@ -63,6 +74,10 @@ export const propertyDocumentsRelations = relations(
     property: one(properties, {
       fields: [propertyDocuments.propertyId],
       references: [properties.id],
+    }),
+    owner: one(owners, {
+      fields: [propertyDocuments.ownerId],
+      references: [owners.id],
     }),
     category: one(documentCategories, {
       fields: [propertyDocuments.categoryId],

@@ -61,7 +61,7 @@ export const propertyFormSchema = z.object({
   highlights: z.array(z.string()).max(30).default([]),
   neighborhood: z.array(z.string()).max(30).default([]),
 
-  ownerId: z.string().uuid().optional().or(z.literal("")),
+  ownerIds: z.array(z.string().uuid()).max(10).default([]),
   listingType: z.enum(["exclusiva", "aberta"]).optional().or(z.literal("")),
   listingStart: z.string().optional(),
   listingEnd: z.string().optional(),

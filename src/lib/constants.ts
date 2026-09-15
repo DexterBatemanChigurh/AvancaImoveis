@@ -57,10 +57,21 @@ export const DEFAULT_STAGES = [
 /** Categorias de documento padrão — configuráveis depois no painel. */
 export const DEFAULT_DOCUMENT_CATEGORIES = [
   "Matrícula",
+  "Escritura",
   "IPTU",
+  "Certidões",
   "Planta",
   "Contrato de exclusividade",
   "Habite-se",
-  "Fotos originais",
+  "Documentos do proprietário",
   "Outros",
+] as const;
+
+/** Upload de documento privado (matrícula, contrato etc.). */
+export const MAX_DOCUMENT_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB
+export const ALLOWED_DOCUMENT_MIME_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
 ] as const;

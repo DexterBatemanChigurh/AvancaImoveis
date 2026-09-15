@@ -4,9 +4,14 @@ import { notFound } from "next/navigation";
 
 import { CopyLinkButton } from "@/components/admin/copy-link-button";
 import { DeletePropertyButton } from "@/components/admin/delete-property-button";
+import { DocumentManager } from "@/components/admin/document-manager";
 import { PropertyForm } from "@/components/admin/property-form";
 import { PropertyPhotos } from "@/components/admin/property-photos";
 import { PropertyStatusBadge } from "@/components/ui/badge";
+import {
+  listActiveDocumentCategories,
+  listDocumentsForProperty,
+} from "@/features/documents/queries";
 import { deleteProperty, updateProperty } from "@/features/properties/actions";
 import { getPropertyById } from "@/features/properties/queries";
 import { listOwners } from "@/features/owners/queries";
@@ -18,9 +23,11 @@ type Params = Promise<{ id: string }>;
 
 export default async function EditPropertyPage({ params }: { params: Params }) {
   const { id } = await params;
-  const [property, owners] = await Promise.all([
+  const [property, owners, documents, documentCategories] = await Promise.all([
     getPropertyById(id).catch(() => null),
     listOwners().catch(() => []),
+    listDocumentsForProperty(id).catch(() => []),
+    listActiveDocumentCategories().catch(() => []),
   ]);
   if (!property) notFound();
 
@@ -56,6 +63,12 @@ export default async function EditPropertyPage({ params }: { params: Params }) {
       <PropertyPhotos propertyId={property.id} photos={property.photos} />
 
       <PropertyForm action={boundAction} property={property} owners={owners} />
+
+      <DocumentManager
+        target={{ propertyId: property.id }}
+        documents={documents}
+        categories={documentCategories}
+      />
     </div>
   );
 }
