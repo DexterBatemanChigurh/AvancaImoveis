@@ -9,7 +9,6 @@ import { eq } from "drizzle-orm";
 
 import { requireUser } from "@/features/auth/session";
 import { notifyMatchingAlerts } from "@/features/alerts/notify";
-import { emitCatalogChanged } from "@/lib/events";
 import { geocodeAddressCascade } from "@/lib/geocode";
 import { buildPropertySlug } from "@/lib/slug";
 import { deleteFile } from "@/lib/storage/local";
@@ -83,7 +82,6 @@ export async function createProperty(
   revalidatePath("/admin/imoveis");
   revalidatePath("/imoveis");
   revalidatePath(`/imovel/${slug}`);
-  emitCatalogChanged();
   redirect("/admin/imoveis");
 }
 
@@ -135,7 +133,6 @@ export async function updateProperty(
   revalidatePath(`/admin/imoveis/${id}`);
   revalidatePath("/imoveis");
   if (current?.slug) revalidatePath(`/imovel/${current.slug}`);
-  emitCatalogChanged();
   redirect("/admin/imoveis");
 }
 
@@ -168,7 +165,6 @@ export async function deleteProperty(
   revalidatePath("/admin/imoveis");
   revalidatePath("/imoveis");
   revalidatePath(`/imovel/${property.slug}`);
-  emitCatalogChanged();
   redirect("/admin/imoveis");
 }
 

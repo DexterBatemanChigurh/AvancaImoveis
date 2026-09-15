@@ -9,14 +9,14 @@ import { db } from "@/db";
 import { properties, propertyPhotos } from "@/db/schema";
 import { requireUser } from "@/features/auth/session";
 import { MAX_PHOTOS_PER_PROPERTY } from "@/lib/constants";
-import { emitCatalogChanged } from "@/lib/events";
 import { deleteFile, saveFile } from "@/lib/storage/local";
 import { processPropertyImage } from "@/lib/storage/images";
 import { keys } from "@/lib/storage/url";
 
 export type PhotosState = { ok: boolean; error?: string };
 
-/** As fotos aparecem no catálogo e na página do imóvel — revalida os dois e avisa abas abertas. */
+/** As fotos aparecem no catálogo e na página do imóvel — revalida os dois
+ * (abas abertas do site público percebem via polling, ver live-refresh.tsx). */
 async function revalidatePublicProperty(propertyId: string) {
   const property = await db.query.properties.findFirst({
     where: eq(properties.id, propertyId),
@@ -24,7 +24,6 @@ async function revalidatePublicProperty(propertyId: string) {
   });
   revalidatePath("/imoveis");
   if (property?.slug) revalidatePath(`/imovel/${property.slug}`);
-  emitCatalogChanged();
 }
 
 /** Envia uma ou mais fotos, otimiza e anexa ao imóvel. */
@@ -144,8 +143,14 @@ export async function movePhoto(
 
   const a = list[idx]!;
   const b = list[swapWith]!;
-  await db.update(propertyPhotos).set({ position: b.position }).where(eq(propertyPhotos.id, a.id));
-  await db.update(propertyPhotos).set({ position: a.position }).where(eq(propertyPhotos.id, b.id));
+  await db
+    .update(propertyPhotos)
+    .set({ position: b.position })
+    .where(eq(propertyPhotos.id, a.id));
+  await db
+    .update(propertyPhotos)
+    .set({ position: a.position })
+    .where(eq(propertyPhotos.id, b.id));
 
   revalidatePath(`/admin/imoveis/${propertyId}`);
   await revalidatePublicProperty(propertyId);
