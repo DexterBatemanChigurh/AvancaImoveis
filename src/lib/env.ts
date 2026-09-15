@@ -24,8 +24,19 @@ const schema = z.object({
   // volta pro AUTH_PEPPER (compatibilidade com ambientes já configurados).
   IP_HASH_PEPPER: optionalStr,
 
-  // Fotos e documentos em disco — pasta montada como volume persistente em produção.
+  // Documentos (matrícula, contrato etc.) ainda em disco — recurso não usado
+  // hoje (nenhuma tela faz upload), fica pronto pra quando existir.
   STORAGE_DIR: z.string().default("./storage/uploads"),
+
+  // Fotos de imóvel — bucket público no Supabase Storage (ver
+  // lib/storage/supabase.ts). Trocado de disco local pra isso porque
+  // filesystem de serverless (Vercel) não persiste entre deploys/instâncias.
+  // A URL do projeto é NEXT_PUBLIC_* de propósito: lib/storage/url.ts monta
+  // a URL pública da foto tanto no servidor quanto no navegador (é só a URL
+  // do bucket, não um segredo — o segredo é a service role key, essa nunca
+  // sai do servidor).
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 
   RESEND_API_KEY: optionalStr,
   LEADS_NOTIFY_TO: optionalStr,

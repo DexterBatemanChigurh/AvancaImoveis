@@ -11,7 +11,7 @@ import { requireUser } from "@/features/auth/session";
 import { notifyMatchingAlerts } from "@/features/alerts/notify";
 import { geocodeAddressCascade } from "@/lib/geocode";
 import { buildPropertySlug } from "@/lib/slug";
-import { deleteFile } from "@/lib/storage/local";
+import { deleteFile } from "@/lib/storage/supabase";
 import { propertyFormSchema } from "./schema";
 
 type ActionState = {

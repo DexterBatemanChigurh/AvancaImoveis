@@ -36,6 +36,14 @@ services:
       - key: STORAGE_DIR
         value: ./storage/uploads
 
+      # Fotos de imóvel — bucket público no Supabase Storage (trocado do
+      # disco local). "sync: false" faz o Render pedir esses valores
+      # manualmente no painel, sem gravar segredo nenhum aqui no repo.
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
       # Opcionais (e-mail via Resend) — "sync: false" faz o Render pedir
       # esses valores manualmente no painel, sem gravar nada aqui no repo.
       - key: RESEND_API_KEY

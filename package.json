@@ -21,6 +21,7 @@
     "user:create": "node --env-file=.env.local --import tsx scripts/create-user.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.38.3",

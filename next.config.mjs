@@ -8,8 +8,18 @@ const nextConfig = {
       bodySizeLimit: "16mb",
     },
   },
-  // Fotos/documentos são servidos same-origin por /uploads/[...path]
-  // (ver lib/storage/local.ts) — o otimizador de imagem não precisa de remotePatterns.
+  // Fotos de imóvel vêm do bucket público do Supabase Storage (ver
+  // lib/storage/supabase.ts) — precisa autorizar o domínio pro next/image
+  // otimizar/servir essas URLs externas.
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
 
   // Headers de segurança básicos, sem depender do proxy de produção estar
   // configurado corretamente. Não inclui Content-Security-Policy: o site usa

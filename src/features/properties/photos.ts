@@ -9,7 +9,7 @@ import { db } from "@/db";
 import { properties, propertyPhotos } from "@/db/schema";
 import { requireUser } from "@/features/auth/session";
 import { MAX_PHOTOS_PER_PROPERTY } from "@/lib/constants";
-import { deleteFile, saveFile } from "@/lib/storage/local";
+import { deleteFile, saveFile } from "@/lib/storage/supabase";
 import { processPropertyImage } from "@/lib/storage/images";
 import { keys } from "@/lib/storage/url";
 

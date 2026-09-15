@@ -1,6 +1,7 @@
 /**
  * Só monta caminhos/URLs — sem tocar em disco. Importável tanto por
- * componentes de servidor quanto de cliente (ao contrário de local.ts).
+ * componentes de servidor quanto de cliente (ao contrário de local.ts /
+ * supabase.ts, que têm "server-only").
  */
 
 /** Convenção de chaves no armazenamento. */
@@ -13,9 +14,19 @@ export const keys = {
     `imoveis/${propertyId}/documentos/${fileId}.${ext}`,
 };
 
-/** URL pública (foto) servida por src/app/uploads/[...path]/route.ts. */
+// process.env direto (não @/lib/env): este arquivo é importado também por
+// componentes client, e `env` valida SUPABASE_SERVICE_ROLE_KEY/etc. —
+// segredos que não existem (nem devem existir) no bundle do navegador.
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+
+/** Nome do bucket — não é segredo, fica fixo aqui (única fonte da verdade,
+ * usado também por lib/storage/supabase.ts). */
+export const SUPABASE_STORAGE_BUCKET = "fotos-imoveis";
+
+/** URL pública (foto) — bucket público no Supabase Storage, servido direto
+ * pelo CDN deles (sem passar pela nossa função serverless). */
 export function publicUrl(key: string): string {
-  return `/uploads/${key}`;
+  return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/${key}`;
 }
 
 /**
