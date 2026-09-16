@@ -2,7 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -42,7 +42,7 @@ export async function submitInterest(
   formData: FormData,
 ): Promise<InterestState> {
   const ip = await getClientIp();
-  if (!checkRateLimit(`lead:${ip}`, LEAD_LIMIT, LEAD_WINDOW_MS)) {
+  if (!(await checkRateLimit(`lead:${ip}`, LEAD_LIMIT, LEAD_WINDOW_MS))) {
     return { ok: false, error: "Muitas mensagens enviadas. Tente novamente mais tarde." };
   }
 
@@ -106,35 +106,67 @@ export async function submitInterest(
     link: `/admin/clientes/${client.id}`,
   }).catch((err) => console.error("Falha ao criar notificação de lead:", err));
 
-  // 2) card na primeira etapa
-  const firstStage = await db.query.stages.findFirst({
-    orderBy: [asc(stages.position)],
-  });
+  // 2) card na primeira etapa — mas só cria um NOVO se não existir um já
+  // aberto pra esse mesmo cliente+imóvel. Sem essa checagem, recarregar a
+  // página e reenviar o formulário (ou abrir em duas abas) criava uma
+  // segunda oportunidade idêntica a cada envio.
+  const [existingOpenDeal] = await db
+    .select({ id: deals.id })
+    .from(deals)
+    .innerJoin(dealProperties, eq(dealProperties.dealId, deals.id))
+    .innerJoin(stages, eq(stages.id, deals.stageId))
+    .where(
+      and(
+        eq(deals.clientId, client.id),
+        eq(dealProperties.propertyId, property.id),
+        eq(stages.isWon, false),
+        eq(stages.isLost, false),
+      ),
+    )
+    .orderBy(desc(deals.createdAt))
+    .limit(1);
 
-  if (firstStage) {
-    const [deal] = await db
-      .insert(deals)
-      .values({
-        clientId: client.id,
-        stageId: firstStage.id,
-        title: `${client.name} — ${property.title}`,
-      })
-      .returning({ id: deals.id });
+  if (existingOpenDeal) {
+    // Já existe um negócio aberto pra esse imóvel — não duplica, só deixa
+    // registrado que a pessoa entrou em contato de novo.
+    await db.insert(activities).values({
+      clientId: client.id,
+      dealId: existingOpenDeal.id,
+      kind: "nota",
+      body:
+        `Novo contato pelo site sobre o mesmo imóvel (${property.code}).` +
+        (v.message ? `\nMensagem: ${v.message}` : ""),
+    });
+  } else {
+    const firstStage = await db.query.stages.findFirst({
+      orderBy: [asc(stages.position)],
+    });
 
-    if (deal) {
-      await db
-        .insert(dealProperties)
-        .values({ dealId: deal.id, propertyId: property.id })
-        .onConflictDoNothing();
+    if (firstStage) {
+      const [deal] = await db
+        .insert(deals)
+        .values({
+          clientId: client.id,
+          stageId: firstStage.id,
+          title: `${client.name} — ${property.title}`,
+        })
+        .returning({ id: deals.id });
 
-      await db.insert(activities).values({
-        clientId: client.id,
-        dealId: deal.id,
-        kind: "nota",
-        body:
-          `Lead pelo site no imóvel ${property.code}.` +
-          (v.message ? `\nMensagem: ${v.message}` : ""),
-      });
+      if (deal) {
+        await db
+          .insert(dealProperties)
+          .values({ dealId: deal.id, propertyId: property.id })
+          .onConflictDoNothing();
+
+        await db.insert(activities).values({
+          clientId: client.id,
+          dealId: deal.id,
+          kind: "nota",
+          body:
+            `Lead pelo site no imóvel ${property.code}.` +
+            (v.message ? `\nMensagem: ${v.message}` : ""),
+        });
+      }
     }
   }
 

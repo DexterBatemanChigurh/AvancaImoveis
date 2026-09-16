@@ -54,6 +54,7 @@ export default async function DashboardPage() {
           value={m.conversionRate != null ? `${m.conversionRate}%` : "—"}
           hint="negócios ganhos / total"
         />
+        <StatCard label="Cliques no WhatsApp" value={m.whatsappClicksThisMonth} hint="no mês" />
       </div>
 
       <section className="grid gap-6 lg:grid-cols-2">

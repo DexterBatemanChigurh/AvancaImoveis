@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instagram, MapPin, MessageCircle, Phone } from "lucide-react";
 
+import { WhatsappLink } from "@/components/public/whatsapp-link";
 import { AVANCA, waLink } from "@/lib/brand";
 
 export const metadata: Metadata = {
@@ -31,15 +32,13 @@ export default function SobrePage() {
           <p className="max-w-xl text-sm leading-relaxed text-muted">
             Avança Imóveis faz parte do Grupo PIER7.
           </p>
-          <a
+          <WhatsappLink
             href={waLink("Olá! Gostaria de falar com a equipe da Avança Imóveis.")}
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex w-fit items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-bg transition-opacity hover:opacity-85"
           >
             <MessageCircle className="h-4 w-4" />
             Fale com a gente
-          </a>
+          </WhatsappLink>
         </div>
 
         <div className="flex flex-col gap-4 rounded-2xl bg-surface-2 p-6 text-sm sm:p-8">

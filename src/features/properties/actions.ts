@@ -84,7 +84,10 @@ export async function createProperty(
   revalidatePath("/admin/imoveis");
   revalidatePath("/imoveis");
   revalidatePath(`/imovel/${slug}`);
-  redirect("/admin/imoveis");
+  // Vai direto pra ficha do imóvel recém-criado (não pra lista) — é lá que
+  // aparece "Clientes compatíveis", satisfazendo o pedido de informar a
+  // quantidade de compatíveis assim que o imóvel é cadastrado.
+  redirect(`/admin/imoveis/${row!.id}`);
 }
 
 export async function updateProperty(

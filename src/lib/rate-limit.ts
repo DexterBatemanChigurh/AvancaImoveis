@@ -1,38 +1,38 @@
 import "server-only";
 
-/**
- * Limitador em memória, por processo — suficiente para o porte atual (uma
- * única instância `next start` num VPS pequeno, sem múltiplos processos
- * atrás de um load balancer). Se um dia isso mudar, precisa virar um
- * limitador compartilhado (Redis, ou uma tabela no Postgres) — não é o
- * caso hoje.
- */
-type Bucket = { count: number; resetAt: number };
-const buckets = new Map<string, Bucket>();
+import { sql } from "drizzle-orm";
 
-/** true = permitido, false = estourou o limite pra essa chave. */
-export function checkRateLimit(
+import { db } from "@/db";
+
+/**
+ * Limitador de taxa compartilhado (tabela `rate_limits`, ver
+ * db/schema/rate-limits.ts) — a versão anterior era em memória por
+ * processo, o que não funciona em serverless (Vercel): cada request pode
+ * cair numa instância diferente, "zerada", e o limite nunca é atingido de
+ * verdade. Isso permitia furar o rate-limit de leads/alertas sem esforço.
+ *
+ * O UPSERT abaixo é uma única instrução atômica (não faz um SELECT e
+ * depois um UPDATE separados) — evita a condição de corrida óbvia de
+ * "duas requisições simultâneas leem o mesmo contador e as duas passam".
+ *
+ * true = permitido, false = estourou o limite pra essa chave.
+ */
+export async function checkRateLimit(
   key: string,
   limit: number,
   windowMs: number,
-): boolean {
-  const now = Date.now();
-  const bucket = buckets.get(key);
-  if (!bucket || bucket.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
-  }
-  if (bucket.count >= limit) return false;
-  bucket.count++;
-  return true;
+): Promise<boolean> {
+  const rows = await db.execute<{ count: number }>(sql`
+    INSERT INTO rate_limits (key, count, reset_at)
+    VALUES (${key}, 1, now() + (${windowMs}::text || ' milliseconds')::interval)
+    ON CONFLICT (key) DO UPDATE SET
+      count = CASE WHEN rate_limits.reset_at <= now() THEN 1 ELSE rate_limits.count + 1 END,
+      reset_at = CASE WHEN rate_limits.reset_at <= now()
+        THEN now() + (${windowMs}::text || ' milliseconds')::interval
+        ELSE rate_limits.reset_at
+      END
+    RETURNING count
+  `);
+  const count = rows[0]?.count ?? 1;
+  return count <= limit;
 }
-
-// Limpeza periódica pra não vazar memória com chaves antigas (IPs que não voltam mais).
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
-const cleanup = setInterval(() => {
-  const now = Date.now();
-  for (const [key, bucket] of buckets) {
-    if (bucket.resetAt <= now) buckets.delete(key);
-  }
-}, CLEANUP_INTERVAL_MS);
-cleanup.unref();

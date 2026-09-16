@@ -17,6 +17,7 @@ import { sales } from "./sales";
 import { sessions, users } from "./users";
 import { stages } from "./stages";
 import { visits } from "./visits";
+import { whatsappClicks } from "./whatsapp-clicks";
 
 /* ----------------------------- re-exports ----------------------------- */
 export * from "./_shared";
@@ -30,10 +31,12 @@ export * from "./owners";
 export * from "./properties";
 export * from "./property-owners";
 export * from "./proposals";
+export * from "./rate-limits";
 export * from "./sales";
 export * from "./stages";
 export * from "./users";
 export * from "./visits";
+export * from "./whatsapp-clicks";
 
 /* ------------------------------ relations ---------------------------- */
 
@@ -214,5 +217,12 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   user: one(users, {
     fields: [activityLogs.userId],
     references: [users.id],
+  }),
+}));
+
+export const whatsappClicksRelations = relations(whatsappClicks, ({ one }) => ({
+  property: one(properties, {
+    fields: [whatsappClicks.propertyId],
+    references: [properties.id],
   }),
 }));

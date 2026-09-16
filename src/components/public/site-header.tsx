@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu, MessageCircle, Phone, X } from "lucide-react";
 
 import { FavoritesNavLink } from "@/components/public/favorites-nav-link";
+import { WhatsappLink } from "@/components/public/whatsapp-link";
 import { AVANCA, waLink } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
@@ -79,14 +80,12 @@ export function SiteHeader() {
               {link.label}
             </Link>
           ))}
-          <a
+          <WhatsappLink
             href={waLink("Olá! Vi o site da Avança Imóveis e gostaria de mais informações.")}
-            target="_blank"
-            rel="noopener noreferrer"
             className={cn("link-underline", overlay ? "text-white" : "text-ink")}
           >
             Contato
-          </a>
+          </WhatsappLink>
         </nav>
 
         <div className="col-start-3 flex items-center justify-self-end gap-1 sm:gap-3">
@@ -101,10 +100,8 @@ export function SiteHeader() {
             {AVANCA.phoneDisplay}
           </a>
           <FavoritesNavLink overlay={overlay} />
-          <a
+          <WhatsappLink
             href={waLink("Olá! Vi o site da Avança Imóveis e gostaria de mais informações.")}
-            target="_blank"
-            rel="noopener noreferrer"
             className={cn(
               "hidden h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors sm:flex",
               overlay ? "bg-white text-ink hover:bg-white/90" : "bg-ink text-bg hover:opacity-85",
@@ -112,7 +109,7 @@ export function SiteHeader() {
           >
             <MessageCircle className="h-4 w-4" />
             WhatsApp
-          </a>
+          </WhatsappLink>
           <button
             type="button"
             aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
@@ -140,15 +137,13 @@ export function SiteHeader() {
                 {link.label}
               </Link>
             ))}
-            <a
+            <WhatsappLink
               href={waLink("Olá! Vi o site da Avança Imóveis e gostaria de mais informações.")}
-              target="_blank"
-              rel="noopener noreferrer"
               className="mt-2 flex h-11 items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-bg"
             >
               <MessageCircle className="h-4 w-4" />
               Falar no WhatsApp
-            </a>
+            </WhatsappLink>
           </nav>
         </div>
       )}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 
 import { Reveal } from "@/components/public/reveal";
+import { WhatsappLink } from "@/components/public/whatsapp-link";
 import { AVANCA, waLink } from "@/lib/brand";
 import { publicUrl } from "@/lib/storage/url";
 
@@ -35,15 +36,13 @@ export function FinalCta({ storageKey }: { storageKey: string | null }) {
           >
             Explorar imóveis
           </Link>
-          <a
+          <WhatsappLink
             href={waLink("Olá! Gostaria de falar com um especialista da Avança Imóveis.")}
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex h-12 items-center gap-2 rounded-full border border-white/40 px-6 text-sm font-semibold text-white transition-colors hover:bg-white/10"
           >
             <MessageCircle className="h-4 w-4" />
             Falar com um especialista
-          </a>
+          </WhatsappLink>
         </div>
         <p className="text-xs text-white/60">
           {AVANCA.phoneDisplay} · {AVANCA.address}

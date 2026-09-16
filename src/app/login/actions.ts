@@ -30,7 +30,7 @@ export async function signIn(
   formData: FormData,
 ): Promise<LoginState> {
   const ip = await getClientIp();
-  if (!checkRateLimit(`login:${ip}`, LOGIN_LIMIT, LOGIN_WINDOW_MS)) {
+  if (!(await checkRateLimit(`login:${ip}`, LOGIN_LIMIT, LOGIN_WINDOW_MS))) {
     return { error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
   }
 

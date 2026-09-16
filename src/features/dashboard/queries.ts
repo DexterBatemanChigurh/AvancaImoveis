@@ -4,6 +4,7 @@ import { and, count, eq, gte, inArray, sql, sum } from "drizzle-orm";
 
 import { db } from "@/db";
 import { clients, deals, properties, proposals, sales, stages, visits } from "@/db/schema";
+import { countWhatsappClicksSince } from "@/features/analytics/queries";
 import { startOfMonthBrasilia } from "@/lib/format";
 
 /**
@@ -27,6 +28,7 @@ export async function getDashboardMetrics() {
     dealsByStage,
     dealsWon,
     topViewed,
+    whatsappClicksThisMonth,
   ] = await Promise.all([
     db.select({ n: count() }).from(clients),
     db
@@ -78,6 +80,7 @@ export async function getDashboardMetrics() {
       .from(properties)
       .orderBy(sql`${properties.viewsCount} desc`)
       .limit(5),
+    countWhatsappClicksSince(startOfMonth),
   ]);
 
   const dealsTotalCount = dealsTotal[0]?.n ?? 0;
@@ -104,6 +107,7 @@ export async function getDashboardMetrics() {
       dealsTotalCount > 0
         ? Math.round(((dealsWonTotal[0]?.n ?? 0) / dealsTotalCount) * 100)
         : null,
+    whatsappClicksThisMonth,
     propertiesByStatus,
     dealsByStage,
     topViewed,

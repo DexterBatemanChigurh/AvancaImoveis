@@ -26,6 +26,7 @@ import { PropertyCard } from "@/components/public/property-card";
 import { PropertyGallery } from "@/components/public/property-gallery";
 import { PropertyMap } from "@/components/public/property-map";
 import { ShareButton } from "@/components/public/share-button";
+import { WhatsappLink } from "@/components/public/whatsapp-link";
 import {
   getPublicPropertyBySlug,
   incrementPropertyViews,
@@ -165,16 +166,15 @@ export default async function PropertyPage({ params }: { params: Params }) {
               propertyId={property.id}
               className="pointer-events-auto"
             />
-            <a
+            <WhatsappLink
               href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
+              propertyId={property.id}
               aria-label="Conversar agora"
               className="pointer-events-auto flex h-8 w-8 items-center justify-center gap-1.5 rounded-full bg-ink text-xs font-semibold text-bg shadow-sm transition-opacity hover:opacity-90 sm:h-auto sm:w-auto sm:px-3.5 sm:py-1.5"
             >
               <MessageCircle className="h-3.5 w-3.5 shrink-0" />
               <span className="hidden sm:inline">Conversar agora</span>
-            </a>
+            </WhatsappLink>
           </div>
           <PropertyGallery title={property.title} photos={property.photos} />
         </div>
@@ -288,15 +288,14 @@ export default async function PropertyPage({ params }: { params: Params }) {
             <div className="flex flex-col gap-3 border-t border-line pt-4">
               <h2 className="text-lg">Conversar com anunciante</h2>
               <PhoneReveal phone={AVANCA.phoneDisplay} />
-              <a
+              <WhatsappLink
                 href={waHref}
-                target="_blank"
-                rel="noopener noreferrer"
+                propertyId={property.id}
                 className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 font-semibold text-white transition-opacity hover:opacity-90"
               >
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp
-              </a>
+              </WhatsappLink>
             </div>
           </aside>
 
@@ -351,14 +350,13 @@ export default async function PropertyPage({ params }: { params: Params }) {
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>
                     Encontrou uma informação errada?{" "}
-                    <a
+                    <WhatsappLink
                       href={reportHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      propertyId={property.id}
                       className="link-underline font-medium text-ink"
                     >
                       Avise a gente
-                    </a>
+                    </WhatsappLink>
                     .
                   </span>
                 </li>

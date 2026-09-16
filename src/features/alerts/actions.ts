@@ -29,7 +29,7 @@ export async function createSearchAlert(
   formData: FormData,
 ): Promise<AlertState> {
   const ip = await getClientIp();
-  if (!checkRateLimit(`alert:${ip}`, ALERT_LIMIT, ALERT_WINDOW_MS)) {
+  if (!(await checkRateLimit(`alert:${ip}`, ALERT_LIMIT, ALERT_WINDOW_MS))) {
     return { ok: false, error: "Muitos alertas criados. Tente novamente mais tarde." };
   }
 

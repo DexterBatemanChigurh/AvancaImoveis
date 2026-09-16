@@ -1,5 +1,6 @@
 import { MessageCircle } from "lucide-react";
 
+import { WhatsappLink } from "@/components/public/whatsapp-link";
 import { waLink } from "@/lib/brand";
 
 /**
@@ -9,14 +10,12 @@ import { waLink } from "@/lib/brand";
  */
 export function WhatsappFloat() {
   return (
-    <a
+    <WhatsappLink
       href={waLink("Olá! Vi o site da Avança Imóveis e gostaria de mais informações.")}
-      target="_blank"
-      rel="noopener noreferrer"
       aria-label="Falar no WhatsApp"
       className="fixed bottom-5 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-105 sm:bottom-6 sm:right-6"
     >
       <MessageCircle className="h-6 w-6" />
-    </a>
+    </WhatsappLink>
   );
 }

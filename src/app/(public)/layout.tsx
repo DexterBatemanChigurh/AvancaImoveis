@@ -7,6 +7,7 @@ import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import { LiveRefresh } from "@/components/public/live-refresh";
 import { SiteHeader } from "@/components/public/site-header";
 import { WhatsappFloat } from "@/components/public/whatsapp-float";
+import { WhatsappLink } from "@/components/public/whatsapp-link";
 import { AVANCA, waLink } from "@/lib/brand";
 
 const brandDisplay = Playfair_Display({
@@ -56,14 +57,12 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             <Link href="/sobre" className="link-underline w-fit text-muted hover:text-ink">
               Sobre
             </Link>
-            <a
+            <WhatsappLink
               href={waLink("Olá! Vi o site da Avança Imóveis e gostaria de mais informações.")}
-              target="_blank"
-              rel="noopener noreferrer"
               className="link-underline w-fit text-muted hover:text-ink"
             >
               Contato
-            </a>
+            </WhatsappLink>
           </div>
 
           <div className="flex flex-col gap-3 text-sm">

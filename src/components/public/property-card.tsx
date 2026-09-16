@@ -3,6 +3,7 @@ import { ArrowRight, Bath, BedDouble, Car, MessageCircle, Ruler } from "lucide-r
 
 import { FavoriteButton } from "@/components/public/favorite-button";
 import { PropertyCardMedia } from "@/components/public/property-card-media";
+import { WhatsappLink } from "@/components/public/whatsapp-link";
 import type { PropertyPhoto } from "@/db/schema";
 import type { PublicProperty } from "@/features/properties/queries";
 import { waLink } from "@/lib/brand";
@@ -89,15 +90,14 @@ export function PropertyCard({ property }: Props) {
 
       <div className="flex items-center gap-2.5 pt-3">
         <FavoriteButton propertyId={property.id} className="h-10 w-10 shrink-0" />
-        <a
+        <WhatsappLink
           href={waLink(`Olá! Tenho interesse no imóvel ${property.code} — ${property.title}`)}
-          target="_blank"
-          rel="noopener noreferrer"
+          propertyId={property.id}
           className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-line text-sm font-semibold transition-colors hover:bg-surface-2"
         >
           <MessageCircle className="h-4 w-4" />
           Contatar
-        </a>
+        </WhatsappLink>
       </div>
     </div>
   );
