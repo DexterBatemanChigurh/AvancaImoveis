@@ -49,8 +49,10 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             <p className="text-xs text-muted">Avança Imóveis faz parte do Grupo PIER7.</p>
           </div>
 
-          <div className="flex flex-col gap-3 text-sm">
-            <span className="font-semibold">Navegação</span>
+          <div className="flex flex-col gap-4 text-sm">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+              Navegação
+            </span>
             <Link href="/imoveis" className="link-underline w-fit text-muted hover:text-ink">
               Imóveis
             </Link>
@@ -65,8 +67,10 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </WhatsappLink>
           </div>
 
-          <div className="flex flex-col gap-3 text-sm">
-            <span className="font-semibold">Contato</span>
+          <div className="flex flex-col gap-4 text-sm">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+              Contato
+            </span>
             <a
               href={`tel:+${AVANCA.phoneDigits}`}
               className="flex items-center gap-2 text-muted hover:text-ink"
@@ -83,8 +87,10 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </a>
           </div>
 
-          <div className="flex flex-col gap-3 text-sm">
-            <span className="font-semibold">Onde estamos</span>
+          <div className="flex flex-col gap-4 text-sm">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+              Onde estamos
+            </span>
             <p className="flex items-start gap-2 text-muted">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
               {AVANCA.address}

@@ -48,7 +48,7 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        "z-40 w-full transition-[background-color,border-color,backdrop-filter] duration-500",
+        "z-40 w-full transition-[background-color,border-color,backdrop-filter] duration-300",
         overlayEligible ? "fixed inset-x-0 top-0" : "relative border-b border-line bg-surface",
         overlayEligible && (overlay ? "border-b border-transparent bg-transparent" : "border-b border-line bg-surface/90 backdrop-blur-md"),
       )}
@@ -61,7 +61,7 @@ export function SiteHeader() {
             width={118}
             height={90}
             priority
-            className={cn("h-10 w-auto transition-[filter] duration-500", overlay ? "force-invert" : "brand-logo")}
+            className={cn("h-10 w-auto transition-[filter] duration-300", overlay ? "force-invert" : "brand-logo")}
           />
         </Link>
 

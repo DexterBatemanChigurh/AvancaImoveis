@@ -24,7 +24,7 @@ export function Spotlight({ property }: { property: SpotlightProperty | null }) 
           className="object-cover"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/5" />
 
       <Reveal className="container relative z-10 flex flex-col gap-4 py-20">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/75">

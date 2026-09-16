@@ -63,10 +63,12 @@ html {
   --surface: 0 0% 100%;
   --surface-2: 210 20% 95%;
   --ink: 222 24% 14%;
+  --ink-2: 222 24% 14%;
   --muted: 215 14% 45%;
   --line: 214 20% 88%;
   --accent: 217 85% 45%;
   --accent-ink: 217 85% 34%;
+  --accent-soft: 217 60% 92%;
   --ok: 152 45% 32%;
   --warn: 35 65% 42%;
   --danger: 0 68% 45%;
@@ -78,10 +80,12 @@ html {
     --surface: 222 20% 12%;
     --surface-2: 222 18% 16%;
     --ink: 210 20% 93%;
+    --ink-2: 210 20% 93%;
     --muted: 215 12% 62%;
     --line: 222 16% 22%;
     --accent: 217 85% 68%;
     --accent-ink: 217 90% 80%;
+    --accent-soft: 217 40% 22%;
     --ok: 152 40% 58%;
     --warn: 35 60% 62%;
     --danger: 0 75% 68%;
@@ -93,10 +97,12 @@ html {
   --surface: 222 20% 12%;
   --surface-2: 222 18% 16%;
   --ink: 210 20% 93%;
+  --ink-2: 210 20% 93%;
   --muted: 215 12% 62%;
   --line: 222 16% 22%;
   --accent: 217 85% 68%;
   --accent-ink: 217 90% 80%;
+  --accent-soft: 217 40% 22%;
   --ok: 152 40% 58%;
   --warn: 35 60% 62%;
   --danger: 0 75% 68%;
@@ -106,30 +112,42 @@ html {
   Marca pública Avança Imóveis — paleta neutra e quente (editorial, não
   preto/branco puro), aplicada só dentro de .brand-public (site público).
   O painel interno continua com a paleta do topo do arquivo.
-  Off-white #F5F3EF · carvão #111111 · cinza quente #77736D · areia #D8CFC1.
-  Accent é um bronze/terracota bem dessaturado — usado só em traços finos
-  (sublinhado animado, foco, hover discreto), nunca em blocos grandes.
+  Off-white #F7F5F0 · branco #FFFFFF · grafite #20211F · preto profundo
+  #11100E · cinza secundário #77736C.
+  Accent é o verde institucional #315C4C — identidade da marca, usado só
+  como acento (selos, ícones, traços finos), nunca espalhado em blocos
+  grandes da interface. --accent-soft é o verde claro #DCE8E1, reservado
+  pra fundos discretos de ícone/selo que precisam do tom exato da marca
+  em vez do accent com opacidade.
+  --ink-2 é um segundo "preto" (grafite, mais quente/suave que o ink
+  preto-profundo) — usado só na superfície escura "flutuante" da busca da
+  home, pra diferenciar de blocos de alto impacto (hero, CTA final) que
+  usam --ink puro.
 */
 .brand-public {
-  --bg: 40 23% 95%;
-  --surface: 40 20% 98%;
-  --surface-2: 36 25% 91%;
-  --ink: 0 0% 7%;
-  --muted: 36 4% 45%;
-  --line: 36 15% 85%;
-  --accent: 31 27% 43%;
-  --accent-ink: 31 30% 33%;
+  --bg: 43 30% 95%;
+  --surface: 0 0% 100%;
+  --surface-2: 40 12% 91%;
+  --ink: 40 10% 6%;
+  --ink-2: 90 3% 13%;
+  --muted: 38 5% 45%;
+  --line: 40 10% 86%;
+  --accent: 158 30% 28%;
+  --accent-ink: 158 32% 20%;
+  --accent-soft: 145 21% 89%;
 }
 @media (prefers-color-scheme: dark) {
   .brand-public {
-    --bg: 30 8% 8%;
-    --surface: 30 8% 12%;
-    --surface-2: 30 8% 16%;
-    --ink: 40 15% 92%;
-    --muted: 36 6% 62%;
-    --line: 30 8% 22%;
-    --accent: 31 35% 62%;
-    --accent-ink: 31 40% 72%;
+    --bg: 40 8% 8%;
+    --surface: 40 8% 12%;
+    --surface-2: 40 8% 16%;
+    --ink: 43 15% 92%;
+    --ink-2: 40 8% 20%;
+    --muted: 38 6% 62%;
+    --line: 40 8% 22%;
+    --accent: 158 35% 55%;
+    --accent-ink: 158 40% 70%;
+    --accent-soft: 150 15% 20%;
   }
 }
 .brand-public h1,
@@ -166,10 +184,10 @@ html {
    pra não haver "flash" de conteúdo visível antes do JS montar. */
 .brand-public [data-reveal] {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(16px);
   transition:
-    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .brand-public [data-reveal].is-visible {
   opacity: 1;

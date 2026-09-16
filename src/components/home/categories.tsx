@@ -24,7 +24,7 @@ export function Categories({ categories }: { categories: CategoryOverview[] }) {
         <p className="text-base text-muted">Encontre pelo tipo de imóvel que você procura.</p>
       </Reveal>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {available.map((cat, i) => (
           <Reveal key={cat.kind} delay={i * 80}>
             <Link
@@ -40,7 +40,7 @@ export function Categories({ categories }: { categories: CategoryOverview[] }) {
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
                 />
               )}
-              <div className="absolute inset-0 bg-black/25 transition-colors duration-500 group-hover:bg-black/45" />
+              <div className="absolute inset-0 bg-black/25 transition-colors duration-300 group-hover:bg-black/45" />
               <div className="absolute inset-0 flex flex-col justify-end gap-1 p-4 sm:p-5">
                 <span className="flex items-center justify-between">
                   <span className="text-sm font-semibold uppercase tracking-wide text-white sm:text-base">

@@ -54,9 +54,9 @@ export default async function HomePage() {
       <Hero src={getHeroImageSrc()} />
       <SearchBlock />
 
+      <FeaturedProperties properties={gridProperties} />
       <IntroSection propertiesCount={totals.total} districtsCount={districts.length} />
       <WhyUs />
-      <FeaturedProperties properties={gridProperties} />
       <LifestyleSection storageKey={lifestyleImage} />
       <Categories categories={categories} />
       <Spotlight property={spotlight} />

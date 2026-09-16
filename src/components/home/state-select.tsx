@@ -8,10 +8,16 @@ import { BRAZIL_STATES } from "@/lib/brazil-states";
  */
 export function StateSelect() {
   return (
-    <select name="uf" defaultValue="" className="h-11 rounded-full border border-line bg-bg px-4 text-sm text-ink outline-none">
-      <option value="">Onde deseja morar</option>
+    <select
+      name="uf"
+      defaultValue=""
+      className="h-12 rounded-full border border-white/15 bg-white/5 px-4 text-sm text-bg outline-none focus-visible:border-white/30"
+    >
+      <option value="" className="text-ink">
+        Onde deseja morar
+      </option>
       {BRAZIL_STATES.map((s) => (
-        <option key={s.uf} value={s.uf}>
+        <option key={s.uf} value={s.uf} className="text-ink">
           {s.name}
         </option>
       ))}

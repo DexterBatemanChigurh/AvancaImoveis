@@ -37,12 +37,12 @@ export function IntroSection({
 
         <Reveal
           delay={150}
-          className="grid grid-cols-1 gap-10 self-center sm:grid-cols-3 lg:grid-cols-1 lg:gap-8"
+          className="grid grid-cols-3 gap-6 self-center sm:gap-10 lg:grid-cols-1 lg:gap-8"
         >
           {stats.map(([value, label]) => (
             <div key={label} className="flex flex-col gap-1 border-t border-line pt-4">
-              <span className="text-4xl text-ink sm:text-5xl">{value}</span>
-              <span className="text-sm text-muted">{label}</span>
+              <span className="text-3xl text-ink sm:text-5xl">{value}</span>
+              <span className="text-xs text-muted sm:text-sm">{label}</span>
             </div>
           ))}
         </Reveal>

@@ -8,7 +8,7 @@ import { publicUrl } from "@/lib/storage/url";
 export function LifestyleSection({ storageKey }: { storageKey: string | null }) {
   return (
     <section className="container flex flex-col gap-10 py-24 sm:py-32 lg:flex-row lg:items-center lg:gap-16">
-      <Reveal className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl lg:aspect-[3/4] lg:w-[58%]">
+      <Reveal className="relative aspect-[4/5] w-full overflow-hidden rounded-brand lg:aspect-[3/4] lg:w-[58%]">
         {storageKey ? (
           <Image
             src={publicUrl(storageKey)}
@@ -18,7 +18,7 @@ export function LifestyleSection({ storageKey }: { storageKey: string | null }) 
             className="object-cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(31_20%_18%),_hsl(0_0%_7%))]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(158_12%_16%),_hsl(40_10%_6%))]" />
         )}
       </Reveal>
 

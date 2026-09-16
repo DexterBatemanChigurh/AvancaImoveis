@@ -19,7 +19,7 @@ export function FinalCta({ storageKey }: { storageKey: string | null }) {
           className="object-cover opacity-60"
         />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(31_20%_18%),_hsl(0_0%_7%))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(158_12%_16%),_hsl(40_10%_6%))]" />
       )}
       <div className="absolute inset-0 bg-black/45" />
 

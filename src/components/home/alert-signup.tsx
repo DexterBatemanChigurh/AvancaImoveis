@@ -23,7 +23,7 @@ export function AlertSignup() {
     <section className="border-t border-line">
       <div className="container py-20 sm:py-28">
         <Reveal className="mx-auto flex max-w-xl flex-col items-center gap-6 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent-ink">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
             <BellRing className="h-5 w-5" />
           </span>
           <h2 className="text-3xl sm:text-4xl">Ainda não encontrou o seu?</h2>

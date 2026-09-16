@@ -41,8 +41,12 @@ export function WhyUs() {
 
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           {REASONS.map(({ icon: Icon, title, body }, i) => (
-            <Reveal key={title} delay={i * 100} className="flex flex-col gap-4">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent-ink">
+            <Reveal
+              key={title}
+              delay={i * 100}
+              className="flex flex-col gap-4 border-t border-line pt-6"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
                 <Icon className="h-5 w-5" />
               </span>
               <h3 className="text-lg">{title}</h3>
