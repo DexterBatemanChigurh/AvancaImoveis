@@ -52,8 +52,8 @@ export function SiteHeader() {
         overlayEligible && (overlay ? "border-b border-transparent bg-transparent" : "border-b border-line bg-surface/90 backdrop-blur-md"),
       )}
     >
-      <div className="container flex h-20 items-center justify-between">
-        <Link href="/" aria-label="Avança Imóveis" className="shrink-0">
+      <div className="container grid h-20 grid-cols-[1fr_auto_1fr] items-center">
+        <Link href="/" aria-label="Avança Imóveis" className="shrink-0 justify-self-start">
           <Image
             src="/logo.png"
             alt="Avança Imóveis"
@@ -64,7 +64,12 @@ export function SiteHeader() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
+        {/* Coluna do meio tem largura "auto" (só o conteúdo do nav) e as
+            duas laterais são "1fr" — dividem igualmente o espaço que sobra,
+            então o nav fica sempre centralizado de verdade, mesmo a logo e
+            os ícones da direita tendo larguras bem diferentes entre si
+            (um justify-between comum não centraliza nesse caso). */}
+        <nav className="col-start-2 hidden items-center gap-8 text-sm font-medium md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -84,7 +89,7 @@ export function SiteHeader() {
           </a>
         </nav>
 
-        <div className="flex items-center gap-1 sm:gap-3">
+        <div className="col-start-3 flex items-center justify-self-end gap-1 sm:gap-3">
           <a
             href={`tel:+${AVANCA.phoneDigits}`}
             className={cn(
