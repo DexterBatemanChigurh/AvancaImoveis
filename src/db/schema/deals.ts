@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   doublePrecision,
   integer,
@@ -29,6 +30,7 @@ export const deals = pgTable("deals", {
   title: text("title"), // opcional; por padrão usa o nome do cliente
   position: integer("position").notNull().default(0), // ordem dentro da coluna
   estimatedValue: doublePrecision("estimated_value"),
+  tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
 
   nextActionNote: text("next_action_note"),
   nextActionAt: timestamp("next_action_at", { withTimezone: true }),

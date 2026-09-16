@@ -36,6 +36,15 @@ export const VISIT_STATUS_LABELS = {
   agendada: "Agendada",
   realizada: "Realizada",
   cancelada: "Cancelada",
+  nao_compareceu: "Não compareceu",
+} as const;
+
+export const PROPOSAL_STATUS_LABELS = {
+  enviada: "Enviada",
+  contraproposta: "Contraproposta",
+  aceita: "Aceita",
+  recusada: "Recusada",
+  expirada: "Expirada",
 } as const;
 
 /** Só estes status aparecem no catálogo público. */

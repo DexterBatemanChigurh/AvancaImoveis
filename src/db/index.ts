@@ -30,3 +30,6 @@ if (process.env.NODE_ENV !== "production") {
 
 export const db = drizzle(client, { schema, casing: "snake_case" });
 export { schema };
+
+/** Cliente dentro de `db.transaction(async (tx) => ...)`. */
+export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];

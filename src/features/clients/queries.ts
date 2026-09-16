@@ -1,9 +1,17 @@
 import "server-only";
 
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { activities, clients, deals } from "@/db/schema";
+
+/** Lista enxuta pra <select> (visitas, negócios manuais). */
+export async function listClientsForSelect() {
+  return db.query.clients.findMany({
+    columns: { id: true, name: true },
+    orderBy: [asc(clients.name)],
+  });
+}
 
 /** Lista com a contagem de negócios — usada na tela de lista. */
 export async function listClientsWithDealCount() {

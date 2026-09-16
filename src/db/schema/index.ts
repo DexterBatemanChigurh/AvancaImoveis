@@ -11,6 +11,8 @@ import {
   propertyPhotos,
 } from "./properties";
 import { propertyOwners } from "./property-owners";
+import { proposals } from "./proposals";
+import { sales } from "./sales";
 import { sessions, users } from "./users";
 import { stages } from "./stages";
 import { visits } from "./visits";
@@ -24,6 +26,8 @@ export * from "./deals";
 export * from "./owners";
 export * from "./properties";
 export * from "./property-owners";
+export * from "./proposals";
+export * from "./sales";
 export * from "./stages";
 export * from "./users";
 export * from "./visits";
@@ -90,6 +94,8 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   deals: many(deals),
   visits: many(visits),
   activities: many(activities),
+  proposals: many(proposals),
+  sales: many(sales),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -123,6 +129,11 @@ export const dealsRelations = relations(deals, ({ one, many }) => ({
   properties: many(dealProperties),
   visits: many(visits),
   activities: many(activities),
+  proposals: many(proposals),
+  sale: one(sales, {
+    fields: [deals.id],
+    references: [sales.dealId],
+  }),
 }));
 
 export const dealPropertiesRelations = relations(dealProperties, ({ one }) => ({
@@ -163,5 +174,35 @@ export const activitiesRelations = relations(activities, ({ one }) => ({
   author: one(users, {
     fields: [activities.authorId],
     references: [users.id],
+  }),
+}));
+
+export const proposalsRelations = relations(proposals, ({ one }) => ({
+  deal: one(deals, {
+    fields: [proposals.dealId],
+    references: [deals.id],
+  }),
+  client: one(clients, {
+    fields: [proposals.clientId],
+    references: [clients.id],
+  }),
+  property: one(properties, {
+    fields: [proposals.propertyId],
+    references: [properties.id],
+  }),
+}));
+
+export const salesRelations = relations(sales, ({ one }) => ({
+  deal: one(deals, {
+    fields: [sales.dealId],
+    references: [deals.id],
+  }),
+  client: one(clients, {
+    fields: [sales.clientId],
+    references: [clients.id],
+  }),
+  property: one(properties, {
+    fields: [sales.propertyId],
+    references: [properties.id],
   }),
 }));

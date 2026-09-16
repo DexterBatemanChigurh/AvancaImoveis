@@ -361,6 +361,14 @@ export async function listAdminProperties(
   return { items, total, page, pageSize };
 }
 
+/** Lista enxuta pra <select> (visitas, negócios manuais, fechamento de venda). */
+export async function listPropertiesForSelect() {
+  return db.query.properties.findMany({
+    columns: { id: true, title: true, code: true },
+    orderBy: [asc(properties.title)],
+  });
+}
+
 export async function getPropertyById(id: string) {
   return db.query.properties.findFirst({
     where: eq(properties.id, id),

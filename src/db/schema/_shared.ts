@@ -44,6 +44,15 @@ export const visitStatus = pgEnum("visit_status", [
   "agendada",
   "realizada",
   "cancelada",
+  "nao_compareceu",
+]);
+
+export const proposalStatus = pgEnum("proposal_status", [
+  "enviada",
+  "contraproposta",
+  "aceita",
+  "recusada",
+  "expirada",
 ]);
 
 export const activityKind = pgEnum("activity_kind", [

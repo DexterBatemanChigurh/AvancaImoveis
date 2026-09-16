@@ -1,22 +1,31 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
-import { Placeholder } from "@/components/admin/placeholder";
+import { CrmBoard } from "@/components/admin/crm-board";
+import { Button } from "@/components/ui/button";
+import { listBoard } from "@/features/crm/queries";
 
 export const metadata: Metadata = { title: "CRM" };
 
-export default function CrmPage() {
+export default async function CrmPage() {
+  const stages = await listBoard().catch(() => []);
+
   return (
-    <Placeholder title="CRM" phase="Fase 2">
-      <p>
-        Kanban com as etapas do funil (Novo → Contato feito → Visita agendada →
-        Proposta → Fechado / Perdido), arrastar-e-soltar de cards, ficha do cliente
-        com imóveis de interesse e linha do tempo.
-      </p>
-      <p className="mt-3">
-        O modelo de dados já está pronto (<code>deals</code>, <code>stages</code>,{" "}
-        <code>deal_properties</code>, <code>activities</code>). Falta a UI e a Server
-        Action de mover card. Dependência a instalar: <code>@dnd-kit/core</code>.
-      </p>
-    </Placeholder>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl">CRM</h1>
+        <Link href="/admin/crm/novo">
+          <Button>Novo negócio</Button>
+        </Link>
+      </div>
+
+      {stages.length === 0 ? (
+        <p className="rounded-card border border-dashed border-line p-10 text-center text-muted">
+          Nenhuma etapa de funil configurada ainda.
+        </p>
+      ) : (
+        <CrmBoard stages={stages} />
+      )}
+    </div>
   );
 }

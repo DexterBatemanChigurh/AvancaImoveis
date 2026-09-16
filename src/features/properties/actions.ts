@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { db } from "@/db";
+import { db, type Tx } from "@/db";
 import { properties, propertyOwners } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -207,8 +207,6 @@ async function resolveCoordinates(
     ? { latitude: result.latitude, longitude: result.longitude }
     : { latitude: null, longitude: null };
 }
-
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /** Substitui todos os vínculos de proprietário do imóvel pelos informados agora. */
 async function syncPropertyOwners(
