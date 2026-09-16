@@ -13,15 +13,8 @@ import type { ActionState } from "@/lib/action-state";
 import { geocodeAddressCascade } from "@/lib/geocode";
 import { buildPropertySlug } from "@/lib/slug";
 import { deleteFile } from "@/lib/storage/supabase";
+import { linesFromForm as lines } from "@/lib/form-data";
 import { propertyFormSchema } from "./schema";
-
-/** Campos "uma por linha" chegam como texto; viram array aqui. */
-function lines(formData: FormData, name: string): string[] {
-  return String(formData.get(name) ?? "")
-    .split("\n")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
 
 function parseForm(formData: FormData) {
   const raw = Object.fromEntries(formData.entries());

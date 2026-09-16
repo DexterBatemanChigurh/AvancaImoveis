@@ -50,6 +50,13 @@
       "when": 1789500274363,
       "tag": "0006_workable_black_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789516937891,
+      "tag": "0007_flowery_marvex",
+      "breakpoints": true
     }
   ]
 }
