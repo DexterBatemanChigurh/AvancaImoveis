@@ -5,8 +5,9 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { activities, visits } from "@/db/schema";
+import { activities, clients, properties, visits } from "@/db/schema";
 import { requireUser } from "@/features/auth/session";
+import { createNotification } from "@/features/notifications/queries";
 import type { ActionState } from "@/lib/action-state";
 import { visitFormSchema, visitStatusSchema } from "./schema";
 
@@ -39,6 +40,17 @@ export async function createVisit(
     body: "Visita agendada.",
     authorId: user.id,
   });
+
+  const [client, property] = await Promise.all([
+    db.query.clients.findFirst({ where: eq(clients.id, v.clientId), columns: { name: true } }),
+    db.query.properties.findFirst({ where: eq(properties.id, v.propertyId), columns: { title: true } }),
+  ]);
+  await createNotification({
+    kind: "visita",
+    title: `Visita agendada: ${client?.name ?? "cliente"}`,
+    body: property ? `${property.title} — ${new Date(v.scheduledAt).toLocaleString("pt-BR")}` : undefined,
+    link: `/admin/visitas`,
+  }).catch((err) => console.error("Falha ao criar notificação de visita:", err));
 
   revalidatePath("/admin/visitas");
   revalidatePath("/admin/crm");

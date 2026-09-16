@@ -23,6 +23,7 @@ export * from "./activities";
 export * from "./alerts";
 export * from "./clients";
 export * from "./deals";
+export * from "./notifications";
 export * from "./owners";
 export * from "./properties";
 export * from "./property-owners";

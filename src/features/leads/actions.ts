@@ -19,6 +19,7 @@ import { env, features } from "@/lib/env";
 import { getClientIp } from "@/lib/request-ip";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendAlertConfirmationEmail } from "@/features/alerts/notify";
+import { createNotification } from "@/features/notifications/queries";
 import { CONSENT_TEXT, interestFormSchema } from "./schema";
 
 export type InterestState = {
@@ -62,6 +63,7 @@ export async function submitInterest(
       code: true,
       slug: true,
       district: true,
+      city: true,
       kind: true,
       salePrice: true,
       bedrooms: true,
@@ -87,9 +89,22 @@ export async function submitInterest(
           consentAt: new Date(),
           consentText: CONSENT_TEXT,
           notes: v.message || null,
+          // Critérios iniciais inferidos do imóvel que gerou o lead — só pra
+          // cliente novo (um já existente pode já ter critérios diferentes,
+          // não sobrescreve).
+          kind: property.kind,
+          city: property.city,
+          districts: property.district ? [property.district] : [],
         })
         .returning()
     )[0]!;
+
+  await createNotification({
+    kind: "lead",
+    title: `Novo lead: ${client.name}`,
+    body: `Interesse em ${property.title} (${property.code}).`,
+    link: `/admin/clientes/${client.id}`,
+  }).catch((err) => console.error("Falha ao criar notificação de lead:", err));
 
   // 2) card na primeira etapa
   const firstStage = await db.query.stages.findFirst({

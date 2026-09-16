@@ -7,8 +7,12 @@ import { eq } from "drizzle-orm";
 import { db, type Tx } from "@/db";
 import { activities, dealProperties, deals, properties, sales, stages } from "@/db/schema";
 import { requireUser } from "@/features/auth/session";
+import { createNotification } from "@/features/notifications/queries";
 import type { ActionState } from "@/lib/action-state";
+import { sendEmail } from "@/lib/email";
+import { env, features } from "@/lib/env";
 import { linesFromForm } from "@/lib/form-data";
+import { formatBRL } from "@/lib/format";
 import { getDealById } from "./queries";
 import {
   closeDealSchema,
@@ -200,7 +204,10 @@ export async function closeDeal(_prev: ActionState, formData: FormData): Promise
   const v = parsed.data;
 
   const [deal, wonStage] = await Promise.all([
-    db.query.deals.findFirst({ where: eq(deals.id, v.dealId) }),
+    db.query.deals.findFirst({
+      where: eq(deals.id, v.dealId),
+      with: { client: { columns: { name: true } } },
+    }),
     db.query.stages.findFirst({ where: eq(stages.isWon, true) }),
   ]);
   if (!deal) return { ok: false, error: "Negócio não encontrado." };
@@ -243,8 +250,26 @@ export async function closeDeal(_prev: ActionState, formData: FormData): Promise
 
   const property = await db.query.properties.findFirst({
     where: eq(properties.id, v.propertyId),
-    columns: { slug: true },
+    columns: { slug: true, title: true },
   });
+
+  await createNotification({
+    kind: "venda",
+    title: `Venda fechada: ${deal.client.name}`,
+    body: property ? `${formatBRL(v.saleValue)} — ${property.title}` : formatBRL(v.saleValue),
+    link: "/admin/crm",
+  }).catch((err) => console.error("Falha ao criar notificação de venda:", err));
+
+  if (features.leadEmail) {
+    await sendEmail({
+      to: env.LEADS_NOTIFY_TO!.split(",").map((s) => s.trim()),
+      subject: `Venda fechada: ${deal.client.name}`,
+      text:
+        `Venda de ${formatBRL(v.saleValue)} para ${property?.title ?? "imóvel"}, ` +
+        `cliente ${deal.client.name}.` +
+        (commissionValue != null ? `\nComissão: ${formatBRL(commissionValue)}` : ""),
+    }).catch((err) => console.error("Falha ao enviar e-mail de venda:", err));
+  }
 
   revalidatePath("/admin/crm");
   revalidatePath("/admin/imoveis");

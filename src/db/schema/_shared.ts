@@ -63,3 +63,11 @@ export const activityKind = pgEnum("activity_kind", [
   "mudanca_etapa",
   "visita",
 ]);
+
+/** Tipo de evento que gera notificação in-app (sino no painel). */
+export const notificationKind = pgEnum("notification_kind", [
+  "lead",
+  "visita",
+  "proposta",
+  "venda",
+]);
