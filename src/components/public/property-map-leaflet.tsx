@@ -20,6 +20,12 @@ export function PropertyMapLeaflet({ lat, lng }: { lat: number; lng: number }) {
     if (!containerRef.current) return;
 
     const map = L.map(containerRef.current, {
+      // Sem um view inicial (center/zoom), o Leaflet não tem referência de
+      // coordenadas nenhuma — fitBounds (chamado logo abaixo) precisa de
+      // um estado de view já existente pra converter o círculo em zoom/
+      // centro, senão quebra com "Cannot read properties of undefined".
+      center: [lat, lng],
+      zoom: 15,
       zoomControl: false,
       dragging: false,
       scrollWheelZoom: false,

@@ -6,6 +6,7 @@ import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 
 import { LiveRefresh } from "@/components/public/live-refresh";
 import { SiteHeader } from "@/components/public/site-header";
+import { WhatsappFloat } from "@/components/public/whatsapp-float";
 import { AVANCA, waLink } from "@/lib/brand";
 
 const brandDisplay = Playfair_Display({
@@ -29,6 +30,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
     >
       <LiveRefresh />
       <SiteHeader />
+      <WhatsappFloat />
 
       <main className="flex-1">{children}</main>
 

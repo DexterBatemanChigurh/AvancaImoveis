@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AboutSection } from "@/components/home/about-section";
+import { AlertSignup } from "@/components/home/alert-signup";
 import { Categories } from "@/components/home/categories";
 import { FeaturedProperties } from "@/components/home/featured-properties";
 import { FinalCta } from "@/components/home/final-cta";
@@ -9,6 +10,7 @@ import { IntroSection } from "@/components/home/intro-section";
 import { LifestyleSection } from "@/components/home/lifestyle-section";
 import { SearchBlock } from "@/components/home/search-block";
 import { Spotlight } from "@/components/home/spotlight";
+import { WhyUs } from "@/components/home/why-us";
 import {
   listAvailableDistricts,
   listCategoryOverview,
@@ -53,11 +55,13 @@ export default async function HomePage() {
       <SearchBlock />
 
       <IntroSection propertiesCount={totals.total} districtsCount={districts.length} />
+      <WhyUs />
       <FeaturedProperties properties={gridProperties} />
       <LifestyleSection storageKey={lifestyleImage} />
       <Categories categories={categories} />
       <Spotlight property={spotlight} />
       <AboutSection />
+      <AlertSignup />
       <FinalCta storageKey={finalCtaImage} />
     </div>
   );

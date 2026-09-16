@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Flame } from "lucide-react";
 
 import { Reveal } from "@/components/public/reveal";
 import type { PropertyPhoto } from "@/db/schema";
@@ -9,6 +9,11 @@ import { formatBRL } from "@/lib/format";
 import { publicUrl } from "@/lib/storage/url";
 
 type FeaturedProperty = PublicProperty & { photos: PropertyPhoto[] };
+
+const NEW_WITHIN_DAYS = 14;
+// Só mostra o selo de procura quando o número é grande o bastante pra
+// ser prova social de verdade — "2 visualizações" soaria o oposto disso.
+const POPULAR_VIEWS_THRESHOLD = 20;
 
 /**
  * Layout muda conforme quantos imóveis existem — nunca deixa coluna/linha
@@ -79,6 +84,11 @@ function Tile({
     .filter(Boolean)
     .join(", ");
 
+  const isNew =
+    !!property.publishedAt &&
+    Date.now() - property.publishedAt.getTime() < NEW_WITHIN_DAYS * 24 * 60 * 60 * 1000;
+  const isPopular = property.viewsCount >= POPULAR_VIEWS_THRESHOLD;
+
   return (
     <Link
       href={`/imovel/${property.slug}`}
@@ -103,6 +113,22 @@ function Tile({
         />
       ) : null}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+
+      {(isNew || isPopular) && (
+        <div className="absolute left-4 top-4 flex gap-2 sm:left-6 sm:top-6">
+          {isNew && (
+            <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+              Novo
+            </span>
+          )}
+          {isPopular && (
+            <span className="flex items-center gap-1 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-ink">
+              <Flame className="h-3 w-3" />
+              Alta procura
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-6 sm:p-8">
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/75">
