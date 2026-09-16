@@ -15,7 +15,7 @@ export default async function AdminLayout({
   const user = await requireUser();
 
   return (
-    <div className="min-h-screen bg-bg lg:grid lg:grid-cols-[15rem_1fr]">
+    <div className="admin-shell min-h-screen bg-bg lg:grid lg:grid-cols-[15rem_1fr]">
       {/* Aplica o tema salvo ANTES da primeira pintura — sem isso, a página
           nasceria sempre no tema do sistema e só trocaria pro escolhido
           depois que o React hidratasse (flash visível do tema errado). */}

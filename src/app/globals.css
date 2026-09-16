@@ -203,6 +203,29 @@ html {
   filter: invert(1);
 }
 
+/*
+  Painel administrativo — o resto do site (.brand-public) tem sua própria
+  tipografia editorial (serifada); o admin usa uma sans limpa em todo
+  título, pra ficar com cara de painel/SaaS moderno, não de site
+  institucional. Também dá um pouco de elevação aos "cards" (rounded-card +
+  bg-surface) — sem isso, no claro, um card branco sobre fundo quase-branco
+  não se distinguia de verdade, só pela borda fina.
+*/
+@layer components {
+  .admin-shell h1,
+  .admin-shell h2,
+  .admin-shell h3 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .rounded-card.bg-surface {
+    box-shadow:
+      0 1px 2px 0 rgb(15 23 42 / 0.04),
+      0 1px 3px 0 rgb(15 23 42 / 0.06);
+  }
+}
+
 @layer base {
   * {
     @apply border-line;
