@@ -9,7 +9,9 @@ import { eq } from "drizzle-orm";
 
 import { requireUser } from "@/features/auth/session";
 import { notifyMatchingAlerts } from "@/features/alerts/notify";
+import { logActivity } from "@/features/audit/log";
 import type { ActionState } from "@/lib/action-state";
+import { formatBRL } from "@/lib/format";
 import { geocodeAddressCascade } from "@/lib/geocode";
 import { buildPropertySlug } from "@/lib/slug";
 import { deleteFile } from "@/lib/storage/supabase";
@@ -25,7 +27,6 @@ function parseForm(formData: FormData) {
     highlights: lines(formData, "highlights"),
     neighborhood: lines(formData, "neighborhood"),
     ownerIds: formData.getAll("ownerIds"),
-    hideExactAddress: formData.get("hideExactAddress") === "on",
     forceGeocode: formData.get("forceGeocode") === "on",
   });
 }
@@ -34,7 +35,7 @@ export async function createProperty(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  await requireUser();
+  const user = await requireUser();
 
   const parsed = parseForm(formData);
   if (!parsed.success) {
@@ -57,6 +58,14 @@ export async function createProperty(
     await syncPropertyOwners(tx, inserted!.id, v.ownerIds);
     return inserted;
   });
+
+  await logActivity({
+    userId: user.id,
+    entityType: "property",
+    entityId: row!.id,
+    action: "create",
+    details: `Imóvel criado: ${v.title} (${v.code}), status ${v.status}, ${formatBRL(v.salePrice)}.`,
+  }).catch((err) => console.error("logActivity:", err));
 
   if (v.status === "disponivel") {
     // Aguarda pra garantir que roda antes do redirect encerrar a resposta —
@@ -83,7 +92,7 @@ export async function updateProperty(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  await requireUser();
+  const user = await requireUser();
 
   const parsed = parseForm(formData);
   if (!parsed.success) {
@@ -93,7 +102,14 @@ export async function updateProperty(
 
   const current = await db.query.properties.findFirst({
     where: eq(properties.id, id),
-    columns: { publishedAt: true, latitude: true, longitude: true, slug: true },
+    columns: {
+      publishedAt: true,
+      latitude: true,
+      longitude: true,
+      slug: true,
+      status: true,
+      salePrice: true,
+    },
   });
   const coords = await resolveCoordinates(v, current ?? null);
   const isNewlyPublished = v.status === "disponivel" && !current?.publishedAt;
@@ -112,6 +128,24 @@ export async function updateProperty(
       .where(eq(properties.id, id));
     await syncPropertyOwners(tx, id, v.ownerIds);
   });
+
+  const changes: string[] = [];
+  if (current && current.status !== v.status) {
+    changes.push(`status: ${current.status} → ${v.status}`);
+  }
+  if (current && current.salePrice !== v.salePrice) {
+    changes.push(`preço: ${formatBRL(current.salePrice)} → ${formatBRL(v.salePrice)}`);
+  }
+  await logActivity({
+    userId: user.id,
+    entityType: "property",
+    entityId: id,
+    action: "update",
+    details:
+      changes.length > 0
+        ? `Imóvel atualizado (${changes.join("; ")}).`
+        : `Imóvel atualizado: ${v.title}.`,
+  }).catch((err) => console.error("logActivity:", err));
 
   if (isNewlyPublished && current?.slug) {
     await notifyMatchingAlerts({
@@ -241,7 +275,6 @@ function toColumns(v: ReturnType<typeof propertyFormSchema.parse>) {
     city: v.city || null,
     state: v.state || null,
     zipCode: v.zipCode || null,
-    hideExactAddress: v.hideExactAddress,
     usableArea: v.usableArea ?? null,
     totalArea: v.totalArea ?? null,
     bedrooms: v.bedrooms,

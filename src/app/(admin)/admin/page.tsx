@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { StatCard } from "@/components/admin/stat-card";
 import { getDashboardMetrics } from "@/features/dashboard/queries";
 import { PROPERTY_STATUS_LABELS } from "@/lib/constants";
+import { formatBRL } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -27,12 +28,31 @@ export default async function DashboardPage() {
           hint={`${m.clientsThisMonth} novos neste mês`}
         />
         <StatCard label="Negócios fechados" value={m.dealsWonThisMonth} hint="no mês" />
-        <StatCard label="Visitas realizadas" value={m.visitsDone} />
+        <StatCard
+          label="Visitas"
+          value={m.visitsDone}
+          hint={`${m.visitsUpcoming} agendadas`}
+        />
         <StatCard
           label="Imóveis ativos"
           value={
             m.propertiesByStatus.find((p) => p.status === "disponivel")?.n ?? 0
           }
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Propostas em aberto" value={m.proposalsOpen} />
+        <StatCard
+          label="Vendas no mês"
+          value={m.salesCountThisMonth}
+          hint={formatBRL(m.salesValueThisMonth)}
+        />
+        <StatCard label="Comissão no mês" value={formatBRL(m.commissionThisMonth)} />
+        <StatCard
+          label="Taxa de conversão"
+          value={m.conversionRate != null ? `${m.conversionRate}%` : "—"}
+          hint="negócios ganhos / total"
         />
       </div>
 

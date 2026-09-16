@@ -3,14 +3,15 @@ import { ArrowRight, Bath, BedDouble, Car, MessageCircle, Ruler } from "lucide-r
 
 import { FavoriteButton } from "@/components/public/favorite-button";
 import { PropertyCardMedia } from "@/components/public/property-card-media";
-import type { Property, PropertyPhoto } from "@/db/schema";
+import type { PropertyPhoto } from "@/db/schema";
+import type { PublicProperty } from "@/features/properties/queries";
 import { waLink } from "@/lib/brand";
 import { formatArea, formatBRL } from "@/lib/format";
 
 const NEW_WITHIN_DAYS = 14;
 
 type Props = {
-  property: Property & { photos: PropertyPhoto[] };
+  property: PublicProperty & { photos: PropertyPhoto[] };
 };
 
 export function PropertyCard({ property }: Props) {

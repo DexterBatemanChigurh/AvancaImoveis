@@ -1,7 +1,8 @@
 import { PropertyCard } from "@/components/public/property-card";
-import type { Property, PropertyPhoto } from "@/db/schema";
+import type { PropertyPhoto } from "@/db/schema";
+import type { PublicProperty } from "@/features/properties/queries";
 
-type Item = Property & { photos: PropertyPhoto[] };
+type Item = PublicProperty & { photos: PropertyPhoto[] };
 
 /**
  * Grade de resultados do catálogo. O mapa foi removido daqui a pedido —

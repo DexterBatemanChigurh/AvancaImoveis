@@ -47,6 +47,46 @@ export type CatalogFilters = {
   pageSize?: number;
 };
 
+/**
+ * Nunca inclui endereço exato nem coordenada exata em NADA que alcance o
+ * público — nem na grade do catálogo, nem na API de favoritos, mesmo que a
+ * UI atual não renderize esses campos. Uma resposta JSON pública com
+ * `latitude`/`longitude`/`street` embutidos é inspecionável por qualquer
+ * visitante (aba de rede do navegador), então a proteção tem que ser na
+ * consulta, não só em "a tela não mostra isso".
+ */
+const EXCLUDE_EXACT_ADDRESS = {
+  street: false,
+  number: false,
+  complement: false,
+  zipCode: false,
+  latitude: false,
+  longitude: false,
+} as const;
+
+/** Página do imóvel: mantém lat/lng brutos (usados só no servidor pra
+ * calcular o círculo aproximado — ver lib/geo-privacy.ts), mas nunca rua/
+ * número/complemento/CEP. */
+const EXCLUDE_STREET_ADDRESS = {
+  street: false,
+  number: false,
+  complement: false,
+  zipCode: false,
+} as const;
+
+/** Formato de imóvel que qualquer componente/rota pública pode receber. */
+export type PublicProperty = Omit<
+  Property,
+  "street" | "number" | "complement" | "zipCode" | "latitude" | "longitude"
+>;
+
+/** Só a página do imóvel usa isto — mantém lat/lng brutos pro cálculo do
+ * círculo aproximado no servidor (ver lib/geo-privacy.ts). */
+export type PublicPropertyDetail = Omit<
+  Property,
+  "street" | "number" | "complement" | "zipCode"
+>;
+
 const SORTS: Record<CatalogSort, ReturnType<typeof desc>[]> = {
   recentes: [desc(properties.publishedAt), desc(properties.createdAt)],
   "menor-preco": [asc(properties.salePrice)],
@@ -88,6 +128,7 @@ export async function listPublicProperties(filters: CatalogFilters = {}) {
       orderBy: SORTS[filters.sort ?? "recentes"],
       limit: pageSize,
       offset: (page - 1) * pageSize,
+      columns: EXCLUDE_EXACT_ADDRESS,
       with: {
         // Algumas fotos (não só a capa) para o carrossel no hover do card.
         photos: {
@@ -134,6 +175,7 @@ export async function listFeaturedProperties(limit = 3) {
     // cada carregamento. publishedAt desfaz o empate de forma consistente.
     orderBy: [desc(properties.viewsCount), desc(properties.publishedAt)],
     limit,
+    columns: EXCLUDE_EXACT_ADDRESS,
     with: {
       photos: {
         orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
@@ -170,6 +212,7 @@ export async function listMostViewedThisMonth(limit = 1) {
   const ids = ranked.map((r) => r.propertyId);
   const withData = await db.query.properties.findMany({
     where: inArray(properties.id, ids),
+    columns: EXCLUDE_EXACT_ADDRESS,
     with: {
       photos: {
         orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
@@ -227,6 +270,7 @@ export async function listPublicPropertiesByIds(ids: string[]) {
       eq(properties.status, "disponivel"),
       inArray(properties.id, ids),
     ),
+    columns: EXCLUDE_EXACT_ADDRESS,
     with: {
       photos: {
         orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
@@ -254,6 +298,7 @@ export async function listSimilarProperties(
         where: and(base, eq(properties.district, current.district)),
         orderBy: [desc(properties.publishedAt)],
         limit,
+        columns: EXCLUDE_EXACT_ADDRESS,
         with: {
           photos: {
             orderBy: [
@@ -276,6 +321,7 @@ export async function listSimilarProperties(
     ),
     orderBy: [desc(properties.publishedAt)],
     limit: limit - byDistrict.length,
+    columns: EXCLUDE_EXACT_ADDRESS,
     with: {
       photos: {
         orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
@@ -291,6 +337,7 @@ export async function getPublicPropertyBySlug(slug: string) {
   // Proprietário e documentos NÃO são carregados aqui — nunca vão para o público.
   return db.query.properties.findFirst({
     where: and(eq(properties.slug, slug), eq(properties.status, "disponivel")),
+    columns: EXCLUDE_STREET_ADDRESS,
     with: {
       photos: {
         orderBy: [desc(propertyPhotos.isCover), asc(propertyPhotos.position)],
@@ -366,6 +413,32 @@ export async function listPropertiesForSelect() {
   return db.query.properties.findMany({
     columns: { id: true, title: true, code: true },
     orderBy: [asc(properties.title)],
+  });
+}
+
+/** Imóveis disponíveis com só as colunas que o match (lib/match.ts) usa. */
+export async function listPropertiesForMatch() {
+  return db.query.properties.findMany({
+    where: eq(properties.status, "disponivel"),
+    columns: {
+      id: true,
+      slug: true,
+      title: true,
+      code: true,
+      kind: true,
+      city: true,
+      district: true,
+      salePrice: true,
+      bedrooms: true,
+      bathrooms: true,
+      parkingSpots: true,
+      usableArea: true,
+      totalArea: true,
+      features: true,
+      condoFeatures: true,
+      highlights: true,
+      neighborhood: true,
+    },
   });
 }
 

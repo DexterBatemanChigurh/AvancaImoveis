@@ -3,11 +3,12 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { Reveal } from "@/components/public/reveal";
-import type { Property, PropertyPhoto } from "@/db/schema";
+import type { PropertyPhoto } from "@/db/schema";
+import type { PublicProperty } from "@/features/properties/queries";
 import { formatBRL } from "@/lib/format";
 import { publicUrl } from "@/lib/storage/url";
 
-type FeaturedProperty = Property & { photos: PropertyPhoto[] };
+type FeaturedProperty = PublicProperty & { photos: PropertyPhoto[] };
 
 /**
  * Layout muda conforme quantos imóveis existem — nunca deixa coluna/linha

@@ -6,10 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { ClientForm } from "@/components/admin/client-form";
 import { ClientTimeline } from "@/components/admin/client-timeline";
 import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
+import { MatchList } from "@/components/admin/match-list";
 import { addClientNote, anonymizeClient, updateClient } from "@/features/clients/actions";
 import { getClientById } from "@/features/clients/queries";
+import { listPropertiesForMatch } from "@/features/properties/queries";
 import { VISIT_STATUS_LABELS } from "@/lib/constants";
 import { formatBRL, formatDateTime } from "@/lib/format";
+import { matchScore } from "@/lib/match";
 
 export const metadata: Metadata = { title: "Editar cliente" };
 
@@ -23,6 +26,15 @@ export default async function EditarClientePage({ params }: { params: Params }) 
   const boundUpdate = updateClient.bind(null, id);
   const boundAddNote = addClientNote.bind(null, id);
   const boundAnonymize = anonymizeClient.bind(null, id);
+
+  const candidateProperties = await listPropertiesForMatch().catch(() => []);
+  const matches = candidateProperties.map((property) => ({
+    id: property.id,
+    label: `${property.code} — ${property.title}`,
+    href: `/admin/imoveis/${property.id}`,
+    sub: formatBRL(property.salePrice),
+    result: matchScore(client, property),
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -88,6 +100,8 @@ export default async function EditarClientePage({ params }: { params: Params }) 
           </ul>
         </div>
       )}
+
+      <MatchList title="Imóveis compatíveis" items={matches} />
 
       <ClientForm action={boundUpdate} client={client} />
 

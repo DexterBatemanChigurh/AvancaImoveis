@@ -3,10 +3,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { Reveal } from "@/components/public/reveal";
-import type { Property, PropertyPhoto } from "@/db/schema";
+import type { PropertyPhoto } from "@/db/schema";
+import type { PublicProperty } from "@/features/properties/queries";
 import { publicUrl } from "@/lib/storage/url";
 
-type SpotlightProperty = Property & { photos: PropertyPhoto[] };
+type SpotlightProperty = PublicProperty & { photos: PropertyPhoto[] };
 
 export function Spotlight({ property }: { property: SpotlightProperty | null }) {
   if (!property) return null;

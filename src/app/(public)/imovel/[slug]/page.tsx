@@ -35,6 +35,7 @@ import {
 import { AVANCA, waLink } from "@/lib/brand";
 import { PROPERTY_KIND_LABELS } from "@/lib/constants";
 import { formatArea, formatBRL, formatRelativeDays } from "@/lib/format";
+import { jitterCoordinate } from "@/lib/geo-privacy";
 import { getClientIp, hashIp } from "@/lib/request-ip";
 import {
   absoluteUrl,
@@ -94,9 +95,15 @@ export default async function PropertyPage({ params }: { params: Params }) {
     listAvailableDistricts().catch(() => []),
   ]);
 
-  const hasMap = Boolean(
-    property.latitude && property.longitude && !property.hideExactAddress,
-  );
+  // Nunca usa a coordenada real do imóvel aqui — nem no mapa embutido, nem
+  // nos links externos (Google Maps/Street View) abaixo. `displayCoord` já
+  // vem deslocada (lib/geo-privacy.ts): endereço exato nunca é exposto no
+  // catálogo público, pra nenhum imóvel.
+  const displayCoord =
+    property.latitude != null && property.longitude != null
+      ? jitterCoordinate(property.latitude, property.longitude)
+      : null;
+  const hasMap = Boolean(displayCoord);
   const canonicalUrl = absoluteUrl(propertyPath(property.slug));
   const waHref = waLink(
     `Olá! Tenho interesse no imóvel ${property.code} — ${property.title} (${canonicalUrl})`,
@@ -181,7 +188,6 @@ export default async function PropertyPage({ params }: { params: Params }) {
           state={property.state}
           city={property.city}
           district={property.district}
-          street={property.street}
         />
 
         {/* Título/fatos rápidos ao lado da localização, logo abaixo das
@@ -236,54 +242,31 @@ export default async function PropertyPage({ params }: { params: Params }) {
                   className="flex flex-col gap-3 scroll-mt-24 lg:pl-6 lg:[zoom:1.25]"
                 >
                   <h2 className="text-lg">Localização</h2>
-                  {(property.street || property.district || property.city) && (
+                  {(property.district || property.city) && (
                     <p className="flex items-start gap-1.5 text-sm text-muted">
                       <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                      {[
-                        ...(property.hideExactAddress
-                          ? []
-                          : [property.street, property.number]),
-                        property.district,
-                        property.city,
-                        property.state,
-                      ]
+                      {[property.district, property.city, property.state]
                         .filter(Boolean)
                         .join(", ")}
                     </p>
                   )}
-                  {hasMap ? (
-                    <>
-                      <div className="relative mb-4 h-28 w-full overflow-hidden rounded-brand border border-line">
-                        <PropertyMap
-                          lat={property.latitude!}
-                          lng={property.longitude!}
-                        />
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${property.latitude},${property.longitude}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-bg/95 px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur hover:bg-bg"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          Abrir no mapa
-                        </a>
-                      </div>
+                  {displayCoord ? (
+                    <div className="relative mb-4 h-28 w-full overflow-hidden rounded-brand border border-line">
+                      <PropertyMap lat={displayCoord.lat} lng={displayCoord.lng} />
                       <a
-                        href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${property.latitude},${property.longitude}`}
+                        href={`https://www.google.com/maps/search/?api=1&query=${displayCoord.lat},${displayCoord.lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex h-10 w-fit shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-line bg-bg px-4 text-sm font-medium hover:bg-surface"
+                        className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-bg/95 px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur hover:bg-bg"
                       >
-                        <Camera className="h-4 w-4" />
-                        Ver no Street View
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        Ver área no mapa
                       </a>
-                    </>
+                    </div>
                   ) : (
-                    !property.hideExactAddress && (
-                      <p className="text-sm text-muted">
-                        Localização deste imóvel ainda não disponível.
-                      </p>
-                    )
+                    <p className="text-sm text-muted">
+                      Localização deste imóvel ainda não disponível.
+                    </p>
                   )}
                 </section>
               </div>
@@ -416,13 +399,11 @@ function Breadcrumb({
   state,
   city,
   district,
-  street,
 }: {
   kind: keyof typeof PROPERTY_KIND_LABELS;
   state: string | null;
   city: string | null;
   district: string | null;
-  street: string | null;
 }) {
   const segments: { label: string; href?: string }[] = [
     { label: "Imóveis", href: "/imoveis" },
@@ -451,10 +432,6 @@ function Breadcrumb({
       }),
     });
   }
-  if (street) {
-    segments.push({ label: street });
-  }
-
   return (
     <nav
       aria-label="Trilha"

@@ -48,8 +48,6 @@ export const properties = pgTable("properties", {
   zipCode: text("zip_code"),
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
-  /** Se true, o mapa/endereço exato fica oculto no catálogo (mostra só o bairro). */
-  hideExactAddress: boolean("hide_exact_address").notNull().default(false),
 
   // Características
   usableArea: doublePrecision("usable_area"),

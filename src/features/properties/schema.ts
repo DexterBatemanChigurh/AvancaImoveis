@@ -30,7 +30,6 @@ export const propertyFormSchema = z.object({
       .or(z.literal("")),
   ),
   zipCode: z.string().optional(),
-  hideExactAddress: z.coerce.boolean().default(false),
   // Preenchidas automaticamente por geocodificação ao salvar; só usar estes
   // campos pra corrigir manualmente quando o endereço não geocodificar bem.
   latitude: optionalNumber(z.coerce.number().min(-90).max(90)),

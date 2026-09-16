@@ -231,14 +231,11 @@ export function PropertyForm({
             errors={state.fieldErrors?.state}
           />
         </Row>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            name="hideExactAddress"
-            defaultChecked={p?.hideExactAddress ?? false}
-          />
-          Ocultar endereço exato no catálogo (mostra só o bairro)
-        </label>
+        <p className="text-xs text-muted">
+          O endereço exato (rua/número) e a localização precisa no mapa nunca
+          aparecem no catálogo público — só bairro/cidade e uma área
+          aproximada. Isso vale pra todo imóvel, sem exceção.
+        </p>
 
         <div className="flex flex-col gap-2 rounded-md border border-line bg-surface-2 p-3">
           <p className="text-xs font-medium">Localização no mapa</p>

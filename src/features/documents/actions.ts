@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { propertyDocuments } from "@/db/schema";
 import { requireUser } from "@/features/auth/session";
+import { logActivity } from "@/features/audit/log";
 import type { ActionState } from "@/lib/action-state";
 import {
   ALLOWED_DOCUMENT_MIME_TYPES,
@@ -31,7 +32,7 @@ export async function uploadDocument(
   _prev: DocumentUploadState,
   formData: FormData,
 ): Promise<DocumentUploadState> {
-  await requireUser();
+  const user = await requireUser();
 
   const parsed = documentUploadSchema.safeParse({
     propertyId: formData.get("propertyId") || undefined,
@@ -67,15 +68,26 @@ export async function uploadDocument(
   const bytes = Buffer.from(await file.arrayBuffer());
   await saveFile(key, bytes, file.type);
 
-  await db.insert(propertyDocuments).values({
-    propertyId: v.propertyId ?? null,
-    ownerId: v.ownerId ?? null,
-    categoryId: v.categoryId || null,
-    label: v.label,
-    storageKey: key,
-    mimeType: file.type,
-    sizeBytes: file.size,
-  });
+  const [doc] = await db
+    .insert(propertyDocuments)
+    .values({
+      propertyId: v.propertyId ?? null,
+      ownerId: v.ownerId ?? null,
+      categoryId: v.categoryId || null,
+      label: v.label,
+      storageKey: key,
+      mimeType: file.type,
+      sizeBytes: file.size,
+    })
+    .returning({ id: propertyDocuments.id });
+
+  await logActivity({
+    userId: user.id,
+    entityType: "document",
+    entityId: doc!.id,
+    action: "document_upload",
+    details: `Documento enviado: ${v.label}.`,
+  }).catch((err) => console.error("logActivity:", err));
 
   if (v.propertyId) revalidatePath(`/admin/imoveis/${v.propertyId}`);
   if (v.ownerId) revalidatePath(`/admin/proprietarios/${v.ownerId}`);
@@ -83,7 +95,7 @@ export async function uploadDocument(
 }
 
 export async function deleteDocument(id: string, _formData: FormData) {
-  await requireUser();
+  const user = await requireUser();
 
   const doc = await db.query.propertyDocuments.findFirst({
     where: eq(propertyDocuments.id, id),
@@ -92,6 +104,14 @@ export async function deleteDocument(id: string, _formData: FormData) {
 
   await db.delete(propertyDocuments).where(eq(propertyDocuments.id, id));
   await deleteFile(doc.storageKey);
+
+  await logActivity({
+    userId: user.id,
+    entityType: "document",
+    entityId: doc.id,
+    action: "document_delete",
+    details: `Documento removido: ${doc.label}.`,
+  }).catch((err) => console.error("logActivity:", err));
 
   if (doc.propertyId) revalidatePath(`/admin/imoveis/${doc.propertyId}`);
   if (doc.ownerId) revalidatePath(`/admin/proprietarios/${doc.ownerId}`);

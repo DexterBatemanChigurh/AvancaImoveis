@@ -71,6 +71,20 @@
       "when": 1789521094281,
       "tag": "0009_redundant_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789522240642,
+      "tag": "0010_dark_red_wolf",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789523004088,
+      "tag": "0011_true_vampiro",
+      "breakpoints": true
     }
   ]
 }

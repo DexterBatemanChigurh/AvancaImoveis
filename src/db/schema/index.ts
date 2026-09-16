@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 
 import { activities } from "./activities";
+import { activityLogs } from "./activity-logs";
 import { clients } from "./clients";
 import { dealProperties, deals } from "./deals";
 import { owners } from "./owners";
@@ -20,6 +21,7 @@ import { visits } from "./visits";
 /* ----------------------------- re-exports ----------------------------- */
 export * from "./_shared";
 export * from "./activities";
+export * from "./activity-logs";
 export * from "./alerts";
 export * from "./clients";
 export * from "./deals";
@@ -205,5 +207,12 @@ export const salesRelations = relations(sales, ({ one }) => ({
   property: one(properties, {
     fields: [sales.propertyId],
     references: [properties.id],
+  }),
+}));
+
+export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [activityLogs.userId],
+    references: [users.id],
   }),
 }));

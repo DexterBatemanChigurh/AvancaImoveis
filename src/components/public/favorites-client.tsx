@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 
 import { PropertyCard } from "@/components/public/property-card";
-import type { Property, PropertyPhoto } from "@/db/schema";
+import type { PropertyPhoto } from "@/db/schema";
+import type { PublicProperty } from "@/features/properties/queries";
 import { useFavorites } from "@/lib/favorites";
 
-type Item = Property & { photos: PropertyPhoto[] };
+type Item = PublicProperty & { photos: PropertyPhoto[] };
 
 export function FavoritesClient() {
   const { ids, ready } = useFavorites();

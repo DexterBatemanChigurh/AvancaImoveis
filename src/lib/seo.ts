@@ -15,7 +15,10 @@ export function propertyPath(slug: string) {
  * Ajuda o Google a exibir o resultado com foto e preço (proposta §5).
  */
 export function propertyJsonLd(
-  property: Property,
+  property: Pick<
+    Property,
+    "title" | "description" | "slug" | "publishedAt" | "salePrice" | "status" | "city" | "state"
+  >,
   photos: Pick<PropertyPhoto, "storageKey">[],
 ) {
   return {
@@ -35,11 +38,14 @@ export function propertyJsonLd(
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
     },
+    // Sem postalCode de propósito: no Brasil um CEP costuma identificar uma
+    // rua só (às vezes um único condomínio), o que praticamente equivale a
+    // expor o endereço exato — o mesmo dado que o catálogo público nunca
+    // mostra em nenhum outro lugar da página.
     address: {
       "@type": "PostalAddress",
       addressLocality: property.city ?? undefined,
       addressRegion: property.state ?? undefined,
-      postalCode: property.zipCode ?? undefined,
       addressCountry: "BR",
     },
   };

@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/admin/clientes", label: "Clientes" },
   { href: "/admin/visitas", label: "Visitas" },
   { href: "/admin/proprietarios", label: "Proprietários" },
+  { href: "/admin/auditoria", label: "Auditoria" },
   { href: "/admin/configuracoes", label: "Configurações" },
 ];
 

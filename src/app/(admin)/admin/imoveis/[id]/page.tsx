@@ -5,9 +5,11 @@ import { notFound } from "next/navigation";
 import { CopyLinkButton } from "@/components/admin/copy-link-button";
 import { DeletePropertyButton } from "@/components/admin/delete-property-button";
 import { DocumentManager } from "@/components/admin/document-manager";
+import { MatchList } from "@/components/admin/match-list";
 import { PropertyForm } from "@/components/admin/property-form";
 import { PropertyPhotos } from "@/components/admin/property-photos";
 import { PropertyStatusBadge } from "@/components/ui/badge";
+import { listClientsForMatch } from "@/features/clients/queries";
 import {
   listActiveDocumentCategories,
   listDocumentsForProperty,
@@ -15,6 +17,7 @@ import {
 import { deleteProperty, updateProperty } from "@/features/properties/actions";
 import { getPropertyById } from "@/features/properties/queries";
 import { listOwners } from "@/features/owners/queries";
+import { matchScore } from "@/lib/match";
 import { absoluteUrl, propertyPath } from "@/lib/seo";
 
 export const metadata: Metadata = { title: "Editar imóvel" };
@@ -23,17 +26,26 @@ type Params = Promise<{ id: string }>;
 
 export default async function EditPropertyPage({ params }: { params: Params }) {
   const { id } = await params;
-  const [property, owners, documents, documentCategories] = await Promise.all([
-    getPropertyById(id).catch(() => null),
-    listOwners().catch(() => []),
-    listDocumentsForProperty(id).catch(() => []),
-    listActiveDocumentCategories().catch(() => []),
-  ]);
+  const [property, owners, documents, documentCategories, candidateClients] =
+    await Promise.all([
+      getPropertyById(id).catch(() => null),
+      listOwners().catch(() => []),
+      listDocumentsForProperty(id).catch(() => []),
+      listActiveDocumentCategories().catch(() => []),
+      listClientsForMatch().catch(() => []),
+    ]);
   if (!property) notFound();
 
   const publicUrl = absoluteUrl(propertyPath(property.slug));
   const boundAction = updateProperty.bind(null, id);
   const boundDeleteAction = deleteProperty.bind(null, id);
+
+  const matches = candidateClients.map((client) => ({
+    id: client.id,
+    label: client.name,
+    href: `/admin/clientes/${client.id}`,
+    result: matchScore(client, property),
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,6 +56,13 @@ export default async function EditPropertyPage({ params }: { params: Params }) {
         </div>
         <div className="flex gap-2">
           <CopyLinkButton url={publicUrl} />
+          <a
+            href={`/admin/imoveis/${property.id}/ficha`}
+            target="_blank"
+            className="inline-flex h-8 items-center rounded-md border border-line bg-surface px-3 text-sm hover:bg-surface-2"
+          >
+            Gerar ficha (PDF)
+          </a>
           {property.status === "disponivel" && (
             <Link
               href={publicUrl}
@@ -63,6 +82,8 @@ export default async function EditPropertyPage({ params }: { params: Params }) {
       <PropertyPhotos propertyId={property.id} photos={property.photos} />
 
       <PropertyForm action={boundAction} property={property} owners={owners} />
+
+      <MatchList title="Clientes compatíveis" items={matches} />
 
       <DocumentManager
         target={{ propertyId: property.id }}
