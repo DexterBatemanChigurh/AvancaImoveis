@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Instagram, MapPin, Phone } from "lucide-react";
-import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
+import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
 
 import { LiveRefresh } from "@/components/public/live-refresh";
 import { SiteHeader } from "@/components/public/site-header";
@@ -10,9 +10,16 @@ import { WhatsappFloat } from "@/components/public/whatsapp-float";
 import { WhatsappLink } from "@/components/public/whatsapp-link";
 import { AVANCA, waLink } from "@/lib/brand";
 
-const brandDisplay = Playfair_Display({
+/**
+ * Manrope pros títulos (--font-brand-display) — trocado da serifada
+ * Playfair Display por pedido explícito de reposicionar a marca como
+ * "tecnologia imobiliária moderna" em vez de "imobiliária editorial
+ * tradicional". Geométrica, com pesos até 800, boa presença em título
+ * grande sem virar decorativa.
+ */
+const brandDisplay = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
   variable: "--font-brand-display",
   display: "swap",
 });

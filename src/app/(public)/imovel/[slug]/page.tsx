@@ -190,12 +190,15 @@ export default async function PropertyPage({ params }: { params: Params }) {
           district={property.district}
         />
 
-        {/* Título/fatos rápidos ao lado da localização, logo abaixo das
-            fotos — a versão completa de cada seção (Facts, descrição etc.)
-            continua na coluna abaixo; aqui é só o resumo + o mapa. */}
-        <div className="grid gap-12 lg:grid-cols-[1fr_26rem] lg:items-start lg:gap-16">
-          <div className="order-1 flex flex-col gap-6 lg:order-none lg:col-start-1 lg:row-start-1">
-            <div className="flex flex-col gap-6 self-center rounded-2xl bg-surface-2 p-6 lg:w-[85%] lg:[zoom:0.75]">
+        {/* Duas colunas de verdade (sem hacks de zoom): conteúdo principal à
+            esquerda em ordem natural de leitura, sidebar de contato fixa
+            (sticky) à direita — a mesma escala tipográfica do resto do
+            site, nada de compensar proporção com CSS zoom. */}
+        <div className="grid gap-10 lg:grid-cols-[1fr_23rem] lg:items-start lg:gap-12">
+          <div className="flex flex-col gap-10 lg:col-start-1 lg:row-start-1">
+            {/* Título, preço e fatos rápidos — a informação mais importante
+                (preço) com o maior peso visual do bloco. */}
+            <div className="flex flex-col gap-5 rounded-2xl bg-surface-2 p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2">
                 {property.listingType === "exclusiva" && (
                   <span className="rounded border border-line bg-bg px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted">
@@ -210,98 +213,73 @@ export default async function PropertyPage({ params }: { params: Params }) {
                 </span>
               </div>
 
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,max-content)_minmax(0,max-content)] lg:justify-start lg:divide-x lg:divide-line">
-                <header className="flex flex-col gap-3 text-left lg:pr-6 lg:[zoom:1.25]">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted">
-                    {property.code}
-                    {property.district ? ` · ${property.district}` : ""}
-                  </p>
-                  <h1 className="max-w-2xl text-2xl sm:text-3xl">
-                    {property.title}
-                  </h1>
-                  <p className="text-2xl font-medium">
-                    {formatBRL(property.salePrice)}
-                  </p>
-
-                  <QuickFacts property={property} />
-
-                  {(property.publishedAt || property.updatedAt) && (
-                    <p className="text-xs text-muted">
-                      {property.publishedAt &&
-                        `Publicado há ${formatRelativeDays(property.publishedAt)}`}
-                      {property.publishedAt && property.updatedAt && ", "}
-                      {property.updatedAt &&
-                        `atualizado há ${formatRelativeDays(property.updatedAt)}`}
-                      .
-                    </p>
-                  )}
-                </header>
-
-                <section
-                  id="localizacao"
-                  className="flex flex-col gap-3 scroll-mt-24 lg:pl-6 lg:[zoom:1.25]"
-                >
-                  <h2 className="text-lg">Localização</h2>
-                  {(property.district || property.city) && (
-                    <p className="flex items-start gap-1.5 text-sm text-muted">
-                      <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                      {[property.district, property.city, property.state]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
-                  {displayCoord ? (
-                    <div className="relative mb-4 h-28 w-full overflow-hidden rounded-brand border border-line">
-                      <PropertyMap lat={displayCoord.lat} lng={displayCoord.lng} />
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${displayCoord.lat},${displayCoord.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-bg/95 px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur hover:bg-bg"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        Ver área no mapa
-                      </a>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted">
-                      Localização deste imóvel ainda não disponível.
-                    </p>
-                  )}
-                </section>
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted">
+                  {property.code}
+                  {property.district ? ` · ${property.district}` : ""}
+                </p>
+                <h1 className="max-w-2xl text-2xl sm:text-3xl">{property.title}</h1>
+                <p className="text-3xl font-semibold sm:text-4xl">
+                  {formatBRL(property.salePrice)}
+                </p>
               </div>
+
+              <QuickFacts property={property} />
+
+              {(property.publishedAt || property.updatedAt) && (
+                <p className="text-xs text-muted">
+                  {property.publishedAt &&
+                    `Publicado há ${formatRelativeDays(property.publishedAt)}`}
+                  {property.publishedAt && property.updatedAt && ", "}
+                  {property.updatedAt &&
+                    `atualizado há ${formatRelativeDays(property.updatedAt)}`}
+                  .
+                </p>
+              )}
             </div>
 
-            <section className="flex flex-col gap-3 self-center rounded-2xl bg-surface-2 p-6 lg:w-[85%]">
+            {/* Localização — seção própria de largura cheia, mapa com mais
+                presença visual (era 112px de altura, hack pra caber ao lado
+                do título). */}
+            <section
+              id="localizacao"
+              className="flex flex-col gap-4 scroll-mt-24 rounded-2xl bg-surface-2 p-6 sm:p-8"
+            >
+              <h2 className="text-lg">Localização</h2>
+              {(property.district || property.city) && (
+                <p className="flex items-start gap-1.5 text-sm text-muted">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                  {[property.district, property.city, property.state]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+              )}
+              {displayCoord ? (
+                <div className="relative h-64 w-full overflow-hidden rounded-brand border border-line sm:h-80">
+                  <PropertyMap lat={displayCoord.lat} lng={displayCoord.lng} />
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${displayCoord.lat},${displayCoord.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-bg/95 px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur hover:bg-bg"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Ver área no mapa
+                  </a>
+                </div>
+              ) : (
+                <p className="text-sm text-muted">
+                  Localização deste imóvel ainda não disponível.
+                </p>
+              )}
+            </section>
+
+            <section className="flex flex-col gap-3 rounded-2xl bg-surface-2 p-6 sm:p-8">
               <ValuesTable property={property} />
             </section>
-          </div>
 
-          {/* No mobile aparece logo após os fatos do imóvel, não só no fim da
-              página inteira — no desktop volta pra coluna lateral normal,
-              alinhado ao lado do card acima + do conteúdo abaixo via grid
-              (sem transform/offset manual: sticky cuida do resto). */}
-          <aside className="order-2 flex h-fit flex-col gap-4 rounded-2xl bg-surface-2 p-6 lg:order-none lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:w-[85%] lg:justify-self-center lg:[zoom:0.9]">
-            <h2 className="text-lg">Contatar anunciante</h2>
-            <InterestForm propertyId={property.id} />
-
-            <div className="flex flex-col gap-3 border-t border-line pt-4">
-              <h2 className="text-lg">Conversar com anunciante</h2>
-              <PhoneReveal phone={AVANCA.phoneDisplay} />
-              <WhatsappLink
-                href={waHref}
-                propertyId={property.id}
-                className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 font-semibold text-white transition-opacity hover:opacity-90"
-              >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
-              </WhatsappLink>
-            </div>
-          </aside>
-
-          <div className="order-3 flex flex-col lg:order-none lg:col-start-1 lg:row-start-2 lg:w-[85%] lg:justify-self-center">
             {property.description && (
-              <section className="flex flex-col gap-3 pb-8">
+              <section className="flex flex-col gap-3">
                 <h2 className="text-2xl">Descrição</h2>
                 <div className="max-w-[65ch]">
                   <ExpandableText text={property.description} />
@@ -313,7 +291,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
               property.condoFeatures.length > 0) && (
               <section
                 id="caracteristicas"
-                className="flex flex-col gap-4 scroll-mt-24 rounded-2xl border border-line bg-surface p-6 shadow-sm"
+                className="flex flex-col gap-4 scroll-mt-24 rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-8"
               >
                 <h2 className="text-2xl">Características</h2>
                 <CharacteristicsTabs
@@ -333,7 +311,7 @@ export default async function PropertyPage({ params }: { params: Params }) {
               icon={MapPin}
             />
 
-            <section className="mt-8 flex flex-col gap-3 rounded-2xl bg-surface-2 p-6">
+            <section className="flex flex-col gap-3 rounded-2xl bg-surface-2 p-6 sm:p-8">
               <h2 className="text-lg">Segurança em primeiro lugar</h2>
               <ul className="flex flex-col gap-2 text-sm text-muted">
                 <li className="flex items-start gap-2">
@@ -363,6 +341,27 @@ export default async function PropertyPage({ params }: { params: Params }) {
               </ul>
             </section>
           </div>
+
+          {/* No mobile aparece logo após os fatos do imóvel (ordem natural
+              do documento), não só no fim da página inteira — no desktop
+              vira coluna lateral fixa (sticky) ao lado de todo o conteúdo. */}
+          <aside className="flex h-fit flex-col gap-5 rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-7 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
+            <h2 className="text-lg">Contatar anunciante</h2>
+            <InterestForm propertyId={property.id} />
+
+            <div className="flex flex-col gap-3 border-t border-line pt-5">
+              <h2 className="text-lg">Conversar com anunciante</h2>
+              <PhoneReveal phone={AVANCA.phoneDisplay} />
+              <WhatsappLink
+                href={waHref}
+                propertyId={property.id}
+                className="flex h-12 items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                <MessageCircle className="h-4 w-4" />
+                WhatsApp
+              </WhatsappLink>
+            </div>
+          </aside>
         </div>
 
         {similar.length > 0 && (
@@ -532,9 +531,22 @@ function QuickFacts({
       value: property.usableArea ? formatArea(property.usableArea) : null,
     },
     {
+      icon: Ruler,
+      label: "Área total",
+      value:
+        property.totalArea && property.totalArea !== property.usableArea
+          ? formatArea(property.totalArea)
+          : null,
+    },
+    {
       icon: BedDouble,
       label: "Quartos",
       value: property.bedrooms != null ? String(property.bedrooms) : null,
+    },
+    {
+      icon: BedDouble,
+      label: "Suítes",
+      value: property.suites > 0 ? String(property.suites) : null,
     },
     {
       icon: Bath,

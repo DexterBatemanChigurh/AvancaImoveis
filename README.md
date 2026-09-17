@@ -19,7 +19,7 @@ Sem dependência de nenhum backend-as-a-service. O próprio Next.js é o backend
 | UI | React 19, Tailwind CSS, componentes próprios no padrão shadcn/ui |
 | Banco | PostgreSQL dedicado via **Drizzle ORM** (`docker compose` no dev) |
 | Auth | Própria: e-mail + senha (hash `scrypt`, nativo do Node) + sessão em cookie `httpOnly` na tabela `sessions`. Protege só `/admin` |
-| Arquivos | Disco local, num volume persistente (`STORAGE_DIR`) + otimização de imagem com `sharp`. Fotos servidas por `/uploads`, documentos por `/admin/documentos` (exige login) |
+| Arquivos | Supabase Storage + otimização de imagem com `sharp`. Fotos num bucket público, documentos num bucket privado servidos por `/admin/documentos` (exige login) |
 | Mapa | Leaflet / OpenStreetMap (embed, sem chave) + geocodificação via Nominatim, com pino manual no mapa como alternativa |
 | Localização | Filtro em cascata Estado → Cidade (municípios via API do IBGE) → Bairro |
 | E-mail | Resend (aviso de novo lead + alertas de busca, com confirmação por e-mail) — opcional |

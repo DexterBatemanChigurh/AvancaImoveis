@@ -30,12 +30,3 @@ export const SUPABASE_STORAGE_BUCKET = "fotos-imoveis";
 export function publicUrl(key: string): string {
   return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/${key}`;
 }
-
-/**
- * URL de documento — servida por src/app/(admin)/admin/documentos/[...path],
- * que exige sessão válida. Nunca usar `publicUrl` para documento: aquela
- * rota é pública de propósito (fotos do catálogo) e não faz checagem de login.
- */
-export function documentUrl(key: string): string {
-  return `/admin/documentos/${key}`;
-}

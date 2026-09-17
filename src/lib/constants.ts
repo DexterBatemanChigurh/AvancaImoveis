@@ -19,11 +19,6 @@ export const PROPERTY_KIND_LABELS = {
   outro: "Outro",
 } as const;
 
-export const LISTING_TYPE_LABELS = {
-  exclusiva: "Exclusiva",
-  aberta: "Aberta",
-} as const;
-
 export const LEAD_SOURCE_LABELS = {
   site: "Site",
   indicacao: "Indicação",

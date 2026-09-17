@@ -24,10 +24,6 @@ const schema = z.object({
   // volta pro AUTH_PEPPER (compatibilidade com ambientes já configurados).
   IP_HASH_PEPPER: optionalStr,
 
-  // Documentos (matrícula, contrato etc.) ainda em disco — recurso não usado
-  // hoje (nenhuma tela faz upload), fica pronto pra quando existir.
-  STORAGE_DIR: z.string().default("./storage/uploads"),
-
   // Fotos de imóvel — bucket público no Supabase Storage (ver
   // lib/storage/supabase.ts). Trocado de disco local pra isso porque
   // filesystem de serverless (Vercel) não persiste entre deploys/instâncias.

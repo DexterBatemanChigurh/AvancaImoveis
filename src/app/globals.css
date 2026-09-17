@@ -69,6 +69,11 @@ html {
   --accent: 217 85% 45%;
   --accent-ink: 217 85% 34%;
   --accent-soft: 217 60% 92%;
+  --block-blue: 217 60% 92%;
+  --block-beige: 210 20% 92%;
+  --block-terracotta: 210 20% 92%;
+  --block-yellow: 210 20% 92%;
+  --block-pink: 210 20% 92%;
   --ok: 152 45% 32%;
   --warn: 35 65% 42%;
   --danger: 0 68% 45%;
@@ -86,6 +91,11 @@ html {
     --accent: 217 85% 68%;
     --accent-ink: 217 90% 80%;
     --accent-soft: 217 40% 22%;
+    --block-blue: 217 40% 22%;
+    --block-beige: 222 18% 16%;
+    --block-terracotta: 222 18% 16%;
+    --block-yellow: 222 18% 16%;
+    --block-pink: 222 18% 16%;
     --ok: 152 40% 58%;
     --warn: 35 60% 62%;
     --danger: 0 75% 68%;
@@ -103,6 +113,11 @@ html {
   --accent: 217 85% 68%;
   --accent-ink: 217 90% 80%;
   --accent-soft: 217 40% 22%;
+  --block-blue: 217 40% 22%;
+  --block-beige: 222 18% 16%;
+  --block-terracotta: 222 18% 16%;
+  --block-yellow: 222 18% 16%;
+  --block-pink: 222 18% 16%;
   --ok: 152 40% 58%;
   --warn: 35 60% 62%;
   --danger: 0 75% 68%;
@@ -123,6 +138,11 @@ html {
   preto-profundo) — usado só na superfície escura "flutuante" da busca da
   home, pra diferenciar de blocos de alto impacto (hero, CTA final) que
   usam --ink puro.
+  --block-* são tons editoriais suaves (azul, bege, terracota, amarelo,
+  rosa) usados em blocos específicos pra dar ritmo de cor à composição da
+  home (diferenciais, seção de estilo de vida, "encontrar é fácil") — nunca
+  como decoração espalhada; o verde institucional continua sendo a
+  assinatura visual, esses tons são só pontuação editorial ao redor dele.
 */
 .brand-public {
   --bg: 43 30% 95%;
@@ -135,6 +155,11 @@ html {
   --accent: 158 30% 28%;
   --accent-ink: 158 32% 20%;
   --accent-soft: 145 21% 89%;
+  --block-blue: 207 40% 90%;
+  --block-beige: 37 42% 88%;
+  --block-terracotta: 24 45% 84%;
+  --block-yellow: 45 66% 86%;
+  --block-pink: 3 39% 90%;
 }
 @media (prefers-color-scheme: dark) {
   .brand-public {
@@ -148,14 +173,26 @@ html {
     --accent: 158 35% 55%;
     --accent-ink: 158 40% 70%;
     --accent-soft: 150 15% 20%;
+    --block-blue: 210 20% 20%;
+    --block-beige: 39 20% 17%;
+    --block-terracotta: 23 26% 18%;
+    --block-yellow: 43 32% 15%;
+    --block-pink: 4 17% 17%;
   }
 }
 .brand-public h1,
 .brand-public h2,
 .brand-public h3 {
   font-family: var(--font-brand-display);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.brand-public h1,
+.brand-public h2 {
+  line-height: 1.05;
+}
+.brand-public h3 {
+  line-height: 1.2;
 }
 
 /* Sublinhado animado — usado nos links de nav e CTAs de texto da marca. */

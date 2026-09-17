@@ -2,8 +2,6 @@ import "server-only";
 
 import { VALID_UFS } from "./brazil-states";
 
-export { BRAZIL_STATES, type BrazilStateUf } from "./brazil-states";
-
 /**
  * Todos os municípios de um estado, via API pública do IBGE — gratuita,
  * sem chave, dado oficial. Cobre os 5.570 municípios do Brasil, um

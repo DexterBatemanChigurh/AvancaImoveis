@@ -8,11 +8,16 @@ import { publicUrl } from "@/lib/storage/url";
 
 type Photo = { id: string; storageKey: string; thumbKey: string | null; alt: string | null };
 
+const GRID_TILES = 4;
+
 /**
- * Faixa horizontal com as fotos lado a lado (não mais 1 foto grande + tira
- * de miniaturas embaixo) — cerca de metade da altura de antes, pra ocupar
- * menos espaço na página. Clicar numa foto abre ela em tela cheia
- * (lightbox), que é onde a navegação por setas/teclado/toque continua.
+ * Desktop/tablet (lg+): 1 foto grande (a capa) + até 4 secundárias numa
+ * grade 2x2 ao lado — se sobrarem mais fotos que cabem na grade, a última
+ * célula vira um overlay "+N fotos" que abre o lightbox já naquele ponto.
+ * Mobile: mantém a faixa horizontal com scroll (já funciona bem ao toque,
+ * não faz sentido forçar o layout de grade numa tela estreita).
+ * Em ambos os casos, clicar numa foto abre o lightbox em tela cheia, que é
+ * onde a navegação por setas/teclado/toque entre TODAS as fotos acontece.
  */
 export function PropertyGallery({ title, photos }: { title: string; photos: Photo[] }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -61,54 +66,117 @@ export function PropertyGallery({ title, photos }: { title: string; photos: Phot
 
   if (photos.length === 0) return null;
 
+  const [hero, ...rest] = photos;
+  const gridPhotos = rest.slice(0, GRID_TILES);
+  const extraCount = rest.length - gridPhotos.length;
+
   return (
     <div className="relative">
+      {/* Desktop/tablet — hero grande + grade de secundárias */}
       <div
-        ref={scrollerRef}
-        className="flex gap-2 overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{ scrollSnapType: "x mandatory" }}
+        className={`hidden gap-2 lg:grid lg:h-[460px] xl:h-[540px] 2xl:h-[600px] ${
+          gridPhotos.length > 0 ? "lg:grid-cols-[1.7fr_1fr]" : "lg:grid-cols-1"
+        }`}
       >
-        {photos.map((photo, i) => (
-          <button
-            key={photo.id}
-            type="button"
-            aria-label={`Ampliar foto ${i + 1}`}
-            onClick={() => setLightboxIndex(i)}
-            className="relative aspect-[4/3] h-[391px] shrink-0 cursor-zoom-in overflow-hidden bg-surface-2 sm:h-[548px]"
-            style={{ scrollSnapAlign: "start" }}
-          >
-            <Image
-              src={publicUrl(photo.thumbKey ?? photo.storageKey)}
-              alt={photo.alt ?? `${title} — foto ${i + 1}`}
-              fill
-              sizes="(max-width: 640px) 45vw, 320px"
-              className="object-cover"
-              priority={i === 0}
-            />
-          </button>
-        ))}
+        <button
+          type="button"
+          aria-label="Ampliar foto principal"
+          onClick={() => setLightboxIndex(0)}
+          className="relative h-full cursor-zoom-in overflow-hidden bg-surface-2"
+        >
+          <Image
+            src={publicUrl(hero!.storageKey)}
+            alt={hero!.alt ?? `${title} — foto 1`}
+            fill
+            sizes="(max-width: 1280px) 60vw, 55vw"
+            className="object-cover"
+            priority
+          />
+        </button>
+
+        {gridPhotos.length > 0 && (
+          <div className="grid grid-cols-2 grid-rows-2 gap-2">
+            {gridPhotos.map((photo, i) => {
+              const index = i + 1;
+              const isLastTile = i === gridPhotos.length - 1 && extraCount > 0;
+              return (
+                <button
+                  key={photo.id}
+                  type="button"
+                  aria-label={
+                    isLastTile ? `Ver todas as ${photos.length} fotos` : `Ampliar foto ${index + 1}`
+                  }
+                  onClick={() => setLightboxIndex(index)}
+                  className="relative h-full cursor-zoom-in overflow-hidden bg-surface-2"
+                >
+                  <Image
+                    src={publicUrl(photo.thumbKey ?? photo.storageKey)}
+                    alt={photo.alt ?? `${title} — foto ${index + 1}`}
+                    fill
+                    sizes="25vw"
+                    className="object-cover"
+                  />
+                  {isLastTile && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/55 text-sm font-semibold text-white">
+                      +{extraCount} foto{extraCount > 1 ? "s" : ""}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {hasMultiple && (
-        <>
-          <button
-            type="button"
-            aria-label="Rolar fotos pra esquerda"
-            onClick={() => scrollStrip(-1)}
-            className="absolute left-3 top-1/2 hidden h-[45px] w-[45px] -translate-y-1/2 place-items-center rounded-full border border-line bg-bg shadow-sm transition-transform hover:scale-105 sm:grid"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          <button
-            type="button"
-            aria-label="Rolar fotos pra direita"
-            onClick={() => scrollStrip(1)}
-            className="absolute right-3 top-1/2 hidden h-[45px] w-[45px] -translate-y-1/2 place-items-center rounded-full border border-line bg-bg shadow-sm transition-transform hover:scale-105 sm:grid"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-        </>
-      )}
+      {/* Mobile/tablet pequeno — faixa horizontal com scroll (como antes) */}
+      <div className="relative lg:hidden">
+        <div
+          ref={scrollerRef}
+          className="flex gap-2 overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ scrollSnapType: "x mandatory" }}
+        >
+          {photos.map((photo, i) => (
+            <button
+              key={photo.id}
+              type="button"
+              aria-label={`Ampliar foto ${i + 1}`}
+              onClick={() => setLightboxIndex(i)}
+              className="relative aspect-[4/3] h-[391px] shrink-0 cursor-zoom-in overflow-hidden bg-surface-2"
+              style={{ scrollSnapAlign: "start" }}
+            >
+              <Image
+                src={publicUrl(photo.thumbKey ?? photo.storageKey)}
+                alt={photo.alt ?? `${title} — foto ${i + 1}`}
+                fill
+                sizes="(max-width: 640px) 45vw, 320px"
+                className="object-cover"
+                priority={i === 0}
+              />
+            </button>
+          ))}
+        </div>
+
+        {hasMultiple && (
+          <>
+            <button
+              type="button"
+              aria-label="Rolar fotos pra esquerda"
+              onClick={() => scrollStrip(-1)}
+              className="absolute left-3 top-1/2 hidden h-[45px] w-[45px] -translate-y-1/2 place-items-center rounded-full border border-line bg-bg shadow-sm transition-transform hover:scale-105 sm:grid"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              aria-label="Rolar fotos pra direita"
+              onClick={() => scrollStrip(1)}
+              className="absolute right-3 top-1/2 hidden h-[45px] w-[45px] -translate-y-1/2 place-items-center rounded-full border border-line bg-bg shadow-sm transition-transform hover:scale-105 sm:grid"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </>
+        )}
+      </div>
 
       {lightboxIndex != null && (
         <div
