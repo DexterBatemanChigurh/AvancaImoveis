@@ -273,6 +273,7 @@ export async function closeDeal(_prev: ActionState, formData: FormData): Promise
 
   revalidatePath("/admin/crm");
   revalidatePath("/admin/imoveis");
+  revalidatePath("/");
   revalidatePath("/imoveis");
   if (property?.slug) revalidatePath(`/imovel/${property.slug}`);
 

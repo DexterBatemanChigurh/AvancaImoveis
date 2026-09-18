@@ -82,6 +82,7 @@ export async function createProperty(
   }
 
   revalidatePath("/admin/imoveis");
+  revalidatePath("/");
   revalidatePath("/imoveis");
   revalidatePath(`/imovel/${slug}`);
   // Vai direto pra ficha do imóvel recém-criado (não pra lista) — é lá que
@@ -164,6 +165,7 @@ export async function updateProperty(
 
   revalidatePath("/admin/imoveis");
   revalidatePath(`/admin/imoveis/${id}`);
+  revalidatePath("/");
   revalidatePath("/imoveis");
   if (current?.slug) revalidatePath(`/imovel/${current.slug}`);
   redirect("/admin/imoveis");
@@ -196,6 +198,7 @@ export async function deleteProperty(
   await db.delete(properties).where(eq(properties.id, id));
 
   revalidatePath("/admin/imoveis");
+  revalidatePath("/");
   revalidatePath("/imoveis");
   revalidatePath(`/imovel/${property.slug}`);
   redirect("/admin/imoveis");
