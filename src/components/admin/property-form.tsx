@@ -30,6 +30,10 @@ function formatCep(raw: string) {
     : digits;
 }
 
+function numOrEmpty(n: number | null | undefined) {
+  return n == null ? "" : String(n);
+}
+
 type ActionState = {
   ok: boolean;
   error?: string;
@@ -37,6 +41,77 @@ type ActionState = {
 };
 
 type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
+
+type FormValues = {
+  title: string;
+  code: string;
+  status: string;
+  kind: string;
+  salePrice: string;
+  condoFee: string;
+  iptuYearly: string;
+  zipCode: string;
+  street: string;
+  number: string;
+  district: string;
+  city: string;
+  state: string;
+  bedrooms: string;
+  suites: string;
+  bathrooms: string;
+  parkingSpots: string;
+  usableArea: string;
+  totalArea: string;
+  description: string;
+  features: string;
+  condoFeatures: string;
+  highlights: string;
+  neighborhood: string;
+  ownerIds: string[];
+  listingType: string;
+  listingStart: string;
+  listingEnd: string;
+  commissionPct: string;
+  forceGeocode: boolean;
+};
+
+function buildInitialValues(
+  property?: Property & { owners?: { owner: Owner }[] },
+): FormValues {
+  const p = property;
+  return {
+    title: p?.title ?? "",
+    code: p?.code ?? "",
+    status: p?.status ?? "rascunho",
+    kind: p?.kind ?? "casa",
+    salePrice: numOrEmpty(p?.salePrice),
+    condoFee: numOrEmpty(p?.condoFee),
+    iptuYearly: numOrEmpty(p?.iptuYearly),
+    zipCode: p?.zipCode ?? "",
+    street: p?.street ?? "",
+    number: p?.number ?? "",
+    district: p?.district ?? "",
+    city: p?.city ?? "",
+    state: p?.state ?? "",
+    bedrooms: String(p?.bedrooms ?? 0),
+    suites: String(p?.suites ?? 0),
+    bathrooms: String(p?.bathrooms ?? 0),
+    parkingSpots: String(p?.parkingSpots ?? 0),
+    usableArea: numOrEmpty(p?.usableArea),
+    totalArea: numOrEmpty(p?.totalArea),
+    description: p?.description ?? "",
+    features: (p?.features ?? []).join("\n"),
+    condoFeatures: (p?.condoFeatures ?? []).join("\n"),
+    highlights: (p?.highlights ?? []).join("\n"),
+    neighborhood: (p?.neighborhood ?? []).join("\n"),
+    ownerIds: p?.owners?.map((po) => po.owner.id) ?? [],
+    listingType: p?.listingType ?? "",
+    listingStart: p?.listingStart ?? "",
+    listingEnd: p?.listingEnd ?? "",
+    commissionPct: numOrEmpty(p?.commissionPct),
+    forceGeocode: false,
+  };
+}
 
 export function PropertyForm({
   action,
@@ -52,17 +127,33 @@ export function PropertyForm({
     { ok: false },
   );
   const p = property;
-  const ownerIds = p?.owners?.map((po) => po.owner.id) ?? [];
 
-  const streetRef = useRef<HTMLInputElement>(null);
+  /**
+   * Todos os campos do formulário moram nesse único estado controlado — de
+   * propósito, não é só estilo. Um <form action={formAction}> ligado a
+   * useActionState faz o React resetar os inputs NÃO controlados (os que só
+   * têm defaultValue) toda vez que a action retorna, mesmo quando ela não
+   * lança erro — ou seja, mesmo num retorno de validação `{ ok: false,
+   * fieldErrors }`. Isso é o motivo real de o formulário aparecer "limpo"
+   * depois de um erro: não é o servidor nem a Server Action que apagam nada,
+   * é o próprio React devolvendo o DOM ao defaultValue original. Um input
+   * controlado (value + onChange, como já era o caso de latitude/longitude
+   * no LocationPicker) não sofre esse reset porque o valor exibido sempre
+   * vem do estado do React, não do DOM.
+   */
+  const [values, setValues] = useState<FormValues>(() =>
+    buildInitialValues(property),
+  );
+
+  function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
+    setValues((v) => ({ ...v, [key]: value }));
+  }
+
   const numberRef = useRef<HTMLInputElement>(null);
-  const districtRef = useRef<HTMLInputElement>(null);
-  const cityRef = useRef<HTMLInputElement>(null);
-  const stateRef = useRef<HTMLInputElement>(null);
   const [cepStatus, setCepStatus] = useState<CepStatus>("idle");
 
   function handleCepChange(e: ChangeEvent<HTMLInputElement>) {
-    e.target.value = formatCep(e.target.value);
+    set("zipCode", formatCep(e.target.value));
     setCepStatus("idle");
   }
 
@@ -78,12 +169,13 @@ export function PropertyForm({
         setCepStatus("not-found");
         return;
       }
-      if (streetRef.current)
-        streetRef.current.value = data.logradouro || streetRef.current.value;
-      if (districtRef.current)
-        districtRef.current.value = data.bairro || districtRef.current.value;
-      if (cityRef.current) cityRef.current.value = data.localidade || "";
-      if (stateRef.current) stateRef.current.value = data.uf || "";
+      setValues((v) => ({
+        ...v,
+        street: data.logradouro || v.street,
+        district: data.bairro || v.district,
+        city: data.localidade || "",
+        state: data.uf || "",
+      }));
       setCepStatus("found");
       numberRef.current?.focus();
     } catch {
@@ -114,14 +206,16 @@ export function PropertyForm({
           <Text
             name="title"
             label="Título"
-            defaultValue={p?.title}
+            value={values.title}
+            onChange={(e) => set("title", e.target.value)}
             required
             errors={state.fieldErrors?.title}
           />
           <Text
             name="code"
             label="Código interno"
-            defaultValue={p?.code}
+            value={values.code}
+            onChange={(e) => set("code", e.target.value)}
             required
             errors={state.fieldErrors?.code}
           />
@@ -130,13 +224,15 @@ export function PropertyForm({
           <Select
             name="status"
             label="Status"
-            defaultValue={p?.status ?? "rascunho"}
+            value={values.status}
+            onChange={(e) => set("status", e.target.value)}
             options={Object.entries(PROPERTY_STATUS_LABELS)}
           />
           <Select
             name="kind"
             label="Tipo"
-            defaultValue={p?.kind ?? "casa"}
+            value={values.kind}
+            onChange={(e) => set("kind", e.target.value)}
             options={Object.entries(PROPERTY_KIND_LABELS)}
           />
         </Row>
@@ -148,7 +244,8 @@ export function PropertyForm({
             name="salePrice"
             label="Valor de venda (R$)"
             type="number"
-            defaultValue={p?.salePrice ?? ""}
+            value={values.salePrice}
+            onChange={(e) => set("salePrice", e.target.value)}
             required
             errors={state.fieldErrors?.salePrice}
           />
@@ -156,14 +253,16 @@ export function PropertyForm({
             name="condoFee"
             label="Condomínio (R$)"
             type="number"
-            defaultValue={p?.condoFee ?? ""}
+            value={values.condoFee}
+            onChange={(e) => set("condoFee", e.target.value)}
             errors={state.fieldErrors?.condoFee}
           />
           <Text
             name="iptuYearly"
             label="IPTU/ano (R$)"
             type="number"
-            defaultValue={p?.iptuYearly ?? ""}
+            value={values.iptuYearly}
+            onChange={(e) => set("iptuYearly", e.target.value)}
             errors={state.fieldErrors?.iptuYearly}
           />
         </Row>
@@ -174,7 +273,7 @@ export function PropertyForm({
           <Text
             name="zipCode"
             label="CEP"
-            defaultValue={p?.zipCode ?? ""}
+            value={values.zipCode}
             placeholder="38200-000"
             onChange={handleCepChange}
             onBlur={handleCepBlur}
@@ -196,14 +295,15 @@ export function PropertyForm({
           <Text
             name="street"
             label="Logradouro"
-            defaultValue={p?.street ?? ""}
-            inputRef={streetRef}
+            value={values.street}
+            onChange={(e) => set("street", e.target.value)}
             errors={state.fieldErrors?.street}
           />
           <Text
             name="number"
             label="Número"
-            defaultValue={p?.number ?? ""}
+            value={values.number}
+            onChange={(e) => set("number", e.target.value)}
             inputRef={numberRef}
             errors={state.fieldErrors?.number}
           />
@@ -212,22 +312,22 @@ export function PropertyForm({
           <Text
             name="district"
             label="Bairro"
-            defaultValue={p?.district ?? ""}
-            inputRef={districtRef}
+            value={values.district}
+            onChange={(e) => set("district", e.target.value)}
             errors={state.fieldErrors?.district}
           />
           <Text
             name="city"
             label="Cidade"
-            defaultValue={p?.city ?? ""}
-            inputRef={cityRef}
+            value={values.city}
+            onChange={(e) => set("city", e.target.value)}
             errors={state.fieldErrors?.city}
           />
           <Text
             name="state"
             label="UF"
-            defaultValue={p?.state ?? ""}
-            inputRef={stateRef}
+            value={values.state}
+            onChange={(e) => set("state", e.target.value)}
             errors={state.fieldErrors?.state}
           />
         </Row>
@@ -256,7 +356,12 @@ export function PropertyForm({
           )}
           {p && (
             <label className="flex items-center gap-2 text-xs text-muted">
-              <input type="checkbox" name="forceGeocode" />
+              <input
+                type="checkbox"
+                name="forceGeocode"
+                checked={values.forceGeocode}
+                onChange={(e) => set("forceGeocode", e.target.checked)}
+              />
               Ignorar o pino acima e tentar localizar de novo pelo endereço ao
               salvar
             </label>
@@ -270,25 +375,29 @@ export function PropertyForm({
             name="bedrooms"
             label="Quartos"
             type="number"
-            defaultValue={p?.bedrooms ?? 0}
+            value={values.bedrooms}
+            onChange={(e) => set("bedrooms", e.target.value)}
           />
           <Text
             name="suites"
             label="Suítes"
             type="number"
-            defaultValue={p?.suites ?? 0}
+            value={values.suites}
+            onChange={(e) => set("suites", e.target.value)}
           />
           <Text
             name="bathrooms"
             label="Banheiros"
             type="number"
-            defaultValue={p?.bathrooms ?? 0}
+            value={values.bathrooms}
+            onChange={(e) => set("bathrooms", e.target.value)}
           />
           <Text
             name="parkingSpots"
             label="Vagas"
             type="number"
-            defaultValue={p?.parkingSpots ?? 0}
+            value={values.parkingSpots}
+            onChange={(e) => set("parkingSpots", e.target.value)}
           />
         </Row>
         <Row>
@@ -296,14 +405,16 @@ export function PropertyForm({
             name="usableArea"
             label="Área útil (m²)"
             type="number"
-            defaultValue={p?.usableArea ?? ""}
+            value={values.usableArea}
+            onChange={(e) => set("usableArea", e.target.value)}
             errors={state.fieldErrors?.usableArea}
           />
           <Text
             name="totalArea"
             label="Área total (m²)"
             type="number"
-            defaultValue={p?.totalArea ?? ""}
+            value={values.totalArea}
+            onChange={(e) => set("totalArea", e.target.value)}
             errors={state.fieldErrors?.totalArea}
           />
         </Row>
@@ -315,29 +426,34 @@ export function PropertyForm({
           <textarea
             name="description"
             rows={5}
-            defaultValue={p?.description ?? ""}
+            value={values.description}
+            onChange={(e) => set("description", e.target.value)}
             className="rounded-md border border-line bg-bg px-3 py-2"
           />
         </label>
         <Lines
           name="features"
           label="Características do imóvel (uma por linha)"
-          defaultValue={p?.features ?? []}
+          value={values.features}
+          onChange={(e) => set("features", e.target.value)}
         />
         <Lines
           name="condoFeatures"
           label="Características do condomínio (uma por linha)"
-          defaultValue={p?.condoFeatures ?? []}
+          value={values.condoFeatures}
+          onChange={(e) => set("condoFeatures", e.target.value)}
         />
         <Lines
           name="highlights"
           label="Diferenciais (uma por linha)"
-          defaultValue={p?.highlights ?? []}
+          value={values.highlights}
+          onChange={(e) => set("highlights", e.target.value)}
         />
         <Lines
           name="neighborhood"
           label="Na região (uma por linha)"
-          defaultValue={p?.neighborhood ?? []}
+          value={values.neighborhood}
+          onChange={(e) => set("neighborhood", e.target.value)}
         />
       </Fieldset>
 
@@ -358,7 +474,15 @@ export function PropertyForm({
                     type="checkbox"
                     name="ownerIds"
                     value={o.id}
-                    defaultChecked={ownerIds.includes(o.id)}
+                    checked={values.ownerIds.includes(o.id)}
+                    onChange={(e) =>
+                      set(
+                        "ownerIds",
+                        e.target.checked
+                          ? [...values.ownerIds, o.id]
+                          : values.ownerIds.filter((id) => id !== o.id),
+                      )
+                    }
                   />
                   {o.name}
                 </label>
@@ -370,7 +494,8 @@ export function PropertyForm({
           <Select
             name="listingType"
             label="Tipo de captação"
-            defaultValue={p?.listingType ?? ""}
+            value={values.listingType}
+            onChange={(e) => set("listingType", e.target.value)}
             options={[
               ["", "—"],
               ["exclusiva", "Exclusiva"],
@@ -383,19 +508,22 @@ export function PropertyForm({
             name="listingStart"
             label="Início do contrato"
             type="date"
-            defaultValue={p?.listingStart ?? ""}
+            value={values.listingStart}
+            onChange={(e) => set("listingStart", e.target.value)}
           />
           <Text
             name="listingEnd"
             label="Fim do contrato"
             type="date"
-            defaultValue={p?.listingEnd ?? ""}
+            value={values.listingEnd}
+            onChange={(e) => set("listingEnd", e.target.value)}
           />
           <Text
             name="commissionPct"
             label="Comissão (%)"
             type="number"
-            defaultValue={p?.commissionPct ?? ""}
+            value={values.commissionPct}
+            onChange={(e) => set("commissionPct", e.target.value)}
             errors={state.fieldErrors?.commissionPct}
           />
         </Row>

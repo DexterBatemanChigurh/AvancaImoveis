@@ -35,6 +35,7 @@ export function Text({
   name,
   label,
   type = "text",
+  value,
   defaultValue,
   required,
   errors,
@@ -47,6 +48,15 @@ export function Text({
   name: string;
   label: string;
   type?: string;
+  /**
+   * Modo controlado — usa `value` + `onChange`. Preferível em qualquer
+   * formulário que precise sobreviver a um retorno de Server Action sem
+   * limpar os campos (ver PropertyForm): o React reseta os inputs NÃO
+   * controlados de um <form action={...}> sempre que a action retorna, com
+   * sucesso ou erro — só o valor controlado por estado escapa disso.
+   */
+  value?: string;
+  /** Modo não controlado (legado) — mantido pros formulários que ainda usam esse padrão. */
   defaultValue?: string | number;
   required?: boolean;
   errors?: string[];
@@ -57,6 +67,8 @@ export function Text({
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
 }) {
+  const valueProps =
+    value !== undefined ? { value } : { defaultValue };
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span className="font-medium">
@@ -68,7 +80,7 @@ export function Text({
         name={name}
         type={type}
         step={type === "number" ? "any" : undefined}
-        defaultValue={defaultValue}
+        {...valueProps}
         required={required}
         placeholder={placeholder}
         onChange={onChange}
@@ -87,25 +99,33 @@ export function Text({
 export function Select({
   name,
   label,
+  value,
   defaultValue,
+  onChange,
   options,
 }: {
   name: string;
   label: string;
+  /** Modo controlado — ver comentário equivalente em `Text`. */
+  value?: string;
   defaultValue?: string;
+  onChange?: (e: ChangeEvent<HTMLSelectElement>) => void;
   options: [string, string][];
 }) {
+  const valueProps =
+    value !== undefined ? { value } : { defaultValue };
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span className="font-medium">{label}</span>
       <select
         name={name}
-        defaultValue={defaultValue}
+        {...valueProps}
+        onChange={onChange}
         className="h-10 rounded-md border border-line bg-bg px-3"
       >
-        {options.map(([value, text]) => (
-          <option key={value} value={value}>
-            {text}
+        {options.map(([optValue, optLabel]) => (
+          <option key={optValue} value={optValue}>
+            {optLabel}
           </option>
         ))}
       </select>
@@ -120,19 +140,29 @@ export function Select({
 export function Lines({
   name,
   label,
+  value,
   defaultValue,
+  onChange,
 }: {
   name: string;
   label: string;
-  defaultValue: string[];
+  /** Modo controlado — já vem como texto (uma linha por item), ver `Text`. */
+  value?: string;
+  defaultValue?: string[];
+  onChange?: (e: ChangeEvent<HTMLTextAreaElement>) => void;
 }) {
+  const valueProps =
+    value !== undefined
+      ? { value }
+      : { defaultValue: (defaultValue ?? []).join("\n") };
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span className="font-medium">{label}</span>
       <textarea
         name={name}
         rows={4}
-        defaultValue={defaultValue.join("\n")}
+        {...valueProps}
+        onChange={onChange}
         className="rounded-md border border-line bg-bg px-3 py-2"
       />
     </label>

@@ -18,6 +18,38 @@ import { deleteFile } from "@/lib/storage/supabase";
 import { linesFromForm as lines } from "@/lib/form-data";
 import { propertyFormSchema } from "./schema";
 
+/**
+ * "code" é o único campo do formulário com constraint UNIQUE no banco — um
+ * valor duplicado só falha na hora do INSERT/UPDATE, depois de passar pelo
+ * zod. Sem isso, a violação de constraint sobe como exceção não tratada e
+ * vira a tela de erro genérica do Next.js (perde o formulário inteiro, pior
+ * ainda que só resetar os campos). Detecta especificamente essa constraint
+ * pra devolver um fieldError normal, no mesmo formato que os erros de zod.
+ *
+ * Checagem por duck-typing (campos `code`/`constraint_name`), não
+ * `instanceof postgres.PostgresError`: o Next.js empacota cada rota de
+ * Server Action separadamente, e a rota de criação (/admin/imoveis/novo) e
+ * a de edição (/admin/imoveis/[id]) acabam carregando instâncias distintas
+ * do módulo "postgres" — o mesmo erro real deixa de casar num `instanceof`
+ * entre bundles diferentes, mas o formato do erro (campos crus do
+ * protocolo do Postgres) é sempre o mesmo.
+ */
+function duplicateCodeError(err: unknown): ActionState | null {
+  const isUniqueViolation =
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    err.code === "23505" &&
+    "constraint_name" in err &&
+    err.constraint_name === "properties_code_unique";
+
+  if (!isUniqueViolation) return null;
+  return {
+    ok: false,
+    fieldErrors: { code: ["Já existe um imóvel com esse código interno."] },
+  };
+}
+
 function parseForm(formData: FormData) {
   const raw = Object.fromEntries(formData.entries());
   return propertyFormSchema.safeParse({
@@ -45,24 +77,31 @@ export async function createProperty(
   const coords = await resolveCoordinates(v, null);
   const slug = buildPropertySlug({ title: v.title, district: v.district });
 
-  const row = await db.transaction(async (tx) => {
-    const [inserted] = await tx
-      .insert(properties)
-      .values({
-        ...toColumns(v),
-        ...coords,
-        slug,
-        publishedAt: v.status === "disponivel" ? new Date() : null,
-      })
-      .returning({ id: properties.id });
-    await syncPropertyOwners(tx, inserted!.id, v.ownerIds);
-    return inserted;
-  });
+  let row: { id: string };
+  try {
+    row = await db.transaction(async (tx) => {
+      const [inserted] = await tx
+        .insert(properties)
+        .values({
+          ...toColumns(v),
+          ...coords,
+          slug,
+          publishedAt: v.status === "disponivel" ? new Date() : null,
+        })
+        .returning({ id: properties.id });
+      await syncPropertyOwners(tx, inserted!.id, v.ownerIds);
+      return inserted!;
+    });
+  } catch (err) {
+    const duplicate = duplicateCodeError(err);
+    if (duplicate) return duplicate;
+    throw err;
+  }
 
   await logActivity({
     userId: user.id,
     entityType: "property",
-    entityId: row!.id,
+    entityId: row.id,
     action: "create",
     details: `Imóvel criado: ${v.title} (${v.code}), status ${v.status}, ${formatBRL(v.salePrice)}.`,
   }).catch((err) => console.error("logActivity:", err));
@@ -71,7 +110,7 @@ export async function createProperty(
     // Aguarda pra garantir que roda antes do redirect encerrar a resposta —
     // nunca derruba o salvamento, só loga se o e-mail falhar.
     await notifyMatchingAlerts({
-      id: row!.id,
+      id: row.id,
       slug,
       title: v.title,
       salePrice: v.salePrice,
@@ -88,7 +127,7 @@ export async function createProperty(
   // Vai direto pra ficha do imóvel recém-criado (não pra lista) — é lá que
   // aparece "Clientes compatíveis", satisfazendo o pedido de informar a
   // quantidade de compatíveis assim que o imóvel é cadastrado.
-  redirect(`/admin/imoveis/${row!.id}`);
+  redirect(`/admin/imoveis/${row.id}`);
 }
 
 export async function updateProperty(
@@ -118,20 +157,26 @@ export async function updateProperty(
   const coords = await resolveCoordinates(v, current ?? null);
   const isNewlyPublished = v.status === "disponivel" && !current?.publishedAt;
 
-  await db.transaction(async (tx) => {
-    await tx
-      .update(properties)
-      .set({
-        ...toColumns(v),
-        ...coords,
-        updatedAt: new Date(),
-        publishedAt: isNewlyPublished
-          ? new Date()
-          : (current?.publishedAt ?? null),
-      })
-      .where(eq(properties.id, id));
-    await syncPropertyOwners(tx, id, v.ownerIds);
-  });
+  try {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(properties)
+        .set({
+          ...toColumns(v),
+          ...coords,
+          updatedAt: new Date(),
+          publishedAt: isNewlyPublished
+            ? new Date()
+            : (current?.publishedAt ?? null),
+        })
+        .where(eq(properties.id, id));
+      await syncPropertyOwners(tx, id, v.ownerIds);
+    });
+  } catch (err) {
+    const duplicate = duplicateCodeError(err);
+    if (duplicate) return duplicate;
+    throw err;
+  }
 
   const changes: string[] = [];
   if (current && current.status !== v.status) {
