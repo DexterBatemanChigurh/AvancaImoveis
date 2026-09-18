@@ -103,6 +103,28 @@ export async function addClientNote(
 }
 
 /**
+ * Exclusão PERMANENTE — diferente de `anonymizeClient` (LGPD), essa apaga o
+ * cliente de verdade sem ressalva nenhuma. Todas as tabelas relacionadas
+ * (deals, dealProperties, activities, visits, proposals, sales) têm
+ * `ON DELETE CASCADE` até `clients.id` no próprio schema — apagar a linha
+ * do cliente já arrasta tudo isso junto no banco, sem precisar de uma
+ * transação manual aqui. Inclui vendas fechadas vinculadas a esse cliente:
+ * se ele já comprou algo pela plataforma, esse registro de venda some
+ * também — o botão na tela avisa isso antes de confirmar.
+ */
+export async function deleteClientPermanently(
+  id: string,
+  _formData: FormData,
+): Promise<void> {
+  await requireUser();
+
+  await db.delete(clients).where(eq(clients.id, id));
+
+  revalidatePath("/admin/clientes");
+  redirect("/admin/clientes");
+}
+
+/**
  * Exclusão de dados a pedido do titular (LGPD, proposta §5).
  * Se o cliente já tem negócios/visitas registrados, apagar a linha
  * arrastaria (cascade) todo o histórico comercial — em vez disso,

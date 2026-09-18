@@ -17,6 +17,11 @@ export function IntroSection({
   propertiesCount: number;
   districtsCount: number;
 }) {
+  // Sem nenhum imóvel disponível, "+0 Imóveis selecionados" não faz
+  // sentido pra mostrar — some a faixa inteira, mesmo padrão das outras
+  // seções que dependem de dado real (destaques, categorias, imóvel do mês).
+  if (propertiesCount === 0) return null;
+
   const stats: [string, string][] = [
     [`+${propertiesCount}`, "Imóveis selecionados"],
     [`+${districtsCount}`, "Bairros"],

@@ -7,7 +7,12 @@ import { ClientForm } from "@/components/admin/client-form";
 import { ClientTimeline } from "@/components/admin/client-timeline";
 import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 import { MatchList } from "@/components/admin/match-list";
-import { addClientNote, anonymizeClient, updateClient } from "@/features/clients/actions";
+import {
+  addClientNote,
+  anonymizeClient,
+  deleteClientPermanently,
+  updateClient,
+} from "@/features/clients/actions";
 import { getClientById } from "@/features/clients/queries";
 import { listPropertiesForMatch } from "@/features/properties/queries";
 import { VISIT_STATUS_LABELS } from "@/lib/constants";
@@ -26,6 +31,7 @@ export default async function EditarClientePage({ params }: { params: Params }) 
   const boundUpdate = updateClient.bind(null, id);
   const boundAddNote = addClientNote.bind(null, id);
   const boundAnonymize = anonymizeClient.bind(null, id);
+  const boundDeletePermanently = deleteClientPermanently.bind(null, id);
 
   const candidateProperties = await listPropertiesForMatch().catch(() => []);
   const matches = candidateProperties.map((property) => ({
@@ -38,18 +44,36 @@ export default async function EditarClientePage({ params }: { params: Params }) 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl">{client.name}</h1>
-        <form action={boundAnonymize}>
-          <ConfirmSubmitButton
-            variant="danger"
-            size="sm"
-            confirmMessage="Isso apaga (ou anonimiza, se houver histórico) os dados pessoais deste cliente e não pode ser desfeito. Confirmar exclusão de dados (LGPD)?"
-          >
-            Excluir dados (LGPD)
-          </ConfirmSubmitButton>
-        </form>
+        <div className="flex flex-wrap items-center gap-2">
+          <form action={boundAnonymize}>
+            <ConfirmSubmitButton
+              variant="outline"
+              size="sm"
+              confirmMessage="Isso apaga (ou anonimiza, se houver histórico) os dados pessoais deste cliente e não pode ser desfeito. Confirmar exclusão de dados (LGPD)?"
+            >
+              Excluir dados (LGPD)
+            </ConfirmSubmitButton>
+          </form>
+          <form action={boundDeletePermanently}>
+            <ConfirmSubmitButton
+              variant="danger"
+              size="sm"
+              confirmMessage={`Excluir "${client.name}" PERMANENTEMENTE? Isso remove o cliente e TUDO ligado a ele — negócios, visitas, propostas e vendas fechadas — sem preservar nada. Não tem como desfazer.`}
+            >
+              Excluir permanentemente
+            </ConfirmSubmitButton>
+          </form>
+        </div>
       </div>
+      <p className="text-xs text-muted">
+        <strong>Excluir dados (LGPD)</strong> anonimiza os dados pessoais mas
+        preserva negócios/visitas já registrados (a pedido do titular).{" "}
+        <strong>Excluir permanentemente</strong> apaga tudo, sem exceção —
+        use só quando quiser remover o cliente de vez, inclusive do
+        histórico comercial.
+      </p>
 
       {client.anonymizedAt && (
         <p className="rounded-md border border-line bg-surface-2 p-3 text-sm text-muted">
