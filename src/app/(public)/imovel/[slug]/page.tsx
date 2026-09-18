@@ -492,33 +492,20 @@ function ValuesTable({
   return (
     <>
       <h2 className="text-lg">Valores</h2>
-      <table className="w-full text-sm">
-        <thead>
-          <tr>
-            {rows.map((row) => (
-              <th
-                key={row.label}
-                scope="col"
-                className="pb-2 pr-8 text-left font-normal text-muted last:pr-0"
-              >
-                {row.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            {rows.map((row) => (
-              <td
-                key={row.label}
-                className="whitespace-nowrap pr-8 text-base font-semibold last:pr-0"
-              >
-                {row.value}
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
+      {/* flex-wrap (não <table> com whitespace-nowrap) de propósito: com
+          3 colunas (Venda/Condomínio/IPTU) uma tabela rígida ficava mais
+          larga que a tela em celulares estreitos — como a página trava
+          overflow-x, o excesso ficava cortado e invisível em vez de
+          rolável. Aqui cada par label/valor quebra pra próxima linha
+          livremente quando não cabe, sem nunca estourar a largura. */}
+      <dl className="flex flex-wrap gap-x-8 gap-y-4">
+        {rows.map((row) => (
+          <div key={row.label} className="flex flex-col gap-1">
+            <dt className="text-sm text-muted">{row.label}</dt>
+            <dd className="text-base font-semibold">{row.value}</dd>
+          </div>
+        ))}
+      </dl>
     </>
   );
 }
@@ -571,12 +558,14 @@ function QuickFacts({
   if (items.length === 0) return null;
 
   return (
-    <div className="flex max-w-full shrink-0 self-start gap-5 overflow-x-auto rounded-2xl bg-bg px-4 py-3">
+    // flex-wrap (não overflow-x-auto) de propósito: com 6 fatos possíveis
+    // (metragem, área total, quartos, suítes, banheiros, vagas), uma fileira
+    // com scroll horizontal escondido não dava nenhuma pista visual de que
+    // havia mais conteúdo — parecia simplesmente cortada. Aqui os itens
+    // quebram pra segunda linha quando não cabem, sem scroll nenhum.
+    <div className="flex max-w-full flex-wrap gap-x-5 gap-y-3 self-start rounded-2xl bg-bg px-4 py-3">
       {items.map(({ icon: Icon, label, value }) => (
-        <div
-          key={label}
-          className="flex shrink-0 flex-col gap-1 whitespace-nowrap"
-        >
+        <div key={label} className="flex flex-col gap-1 whitespace-nowrap">
           <span className="text-xs text-muted">{label}</span>
           <span className="flex items-center gap-1.5 text-sm font-semibold">
             <Icon className="h-4 w-4" />
