@@ -177,6 +177,14 @@ export default async function PropertyPage({ params }: { params: Params }) {
             </WhatsappLink>
           </div>
           <PropertyGallery title={property.title} photos={property.photos} />
+          {/* O header fica transparente/sobreposto aqui (mesma lógica do
+              hero da home) — mas a foto de capa é a foto REAL de cada
+              imóvel, sem controle do que vai aparecer atrás do texto
+              branco do menu. Sem esse gradiente, um imóvel com foto clara
+              (céu, fachada clara, ambiente bem iluminado) deixa o header
+              ilegível — texto branco sobre fundo claro. Cobre só a faixa
+              onde o header realmente fica (não a foto toda). */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/45 to-transparent sm:h-32" />
         </div>
       )}
 

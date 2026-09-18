@@ -122,6 +122,17 @@ html {
   --ink-2 é uma variação sutil do carvão — usada só na superfície
   "flutuante" da busca da home, pra diferenciar de blocos de alto impacto
   (hero, CTA final) que usam --ink puro.
+
+  DE PROPÓSITO sem @media (prefers-color-scheme: dark) aqui — o site
+  público tem várias seções que já são "sempre escuras" por design (hero,
+  cards de diferenciais, faixa de métricas, CTA final, rodapé), pensadas
+  pra funcionar sobre um restante de página CLARO. Se o visitante estiver
+  com o tema escuro do celular/navegador ligado (comum, muita gente usa por
+  padrão), deixar essas variáveis inverterem juntas trocava a paleta toda
+  da home — o que deveria ser claro virava escuro e vice-versa, quebrando
+  o contraste pensado pra cada seção. A identidade visual do site público
+  é fixa, não deve mudar com o tema do sistema de quem visita (diferente
+  do painel /admin, que tem um alternador próprio controlado pela equipe).
 */
 .brand-public {
   --bg: 42 29% 93%;
@@ -134,20 +145,6 @@ html {
   --accent: 158 30% 28%;
   --accent-ink: 158 32% 20%;
   --accent-soft: 145 21% 89%;
-}
-@media (prefers-color-scheme: dark) {
-  .brand-public {
-    --bg: 40 6% 9%;
-    --surface: 40 6% 13%;
-    --surface-2: 40 6% 17%;
-    --ink: 42 20% 93%;
-    --ink-2: 40 6% 21%;
-    --muted: 38 6% 62%;
-    --line: 40 6% 23%;
-    --accent: 158 35% 55%;
-    --accent-ink: 158 40% 70%;
-    --accent-soft: 150 15% 20%;
-  }
 }
 .brand-public h1,
 .brand-public h2,
@@ -210,7 +207,8 @@ html {
 /*
   Logo oficial (public/logo.png) é tinta preta sólida sobre fundo
   transparente. Como a marca não tem cor, inverter pra branco no modo
-  escuro resolve o contraste em qualquer fundo escuro — público ou admin.
+  escuro resolve o contraste em qualquer fundo escuro — login e admin
+  (que ainda respondem ao tema do sistema/alternador manual).
 */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .brand-logo {
@@ -219,6 +217,16 @@ html {
 }
 :root[data-theme="dark"] .brand-logo {
   filter: invert(1);
+}
+/*
+  O site público (.brand-public) tem paleta fixa — não inverte com o tema
+  do sistema (ver nota acima, junto da paleta) — então a logo também não
+  pode inverter lá, senão vira branca sobre um fundo que continua claro.
+  !important de propósito: cancela a regra de dark mode acima, que é mais
+  específica por causa do `:root:not(...)`.
+*/
+.brand-public .brand-logo {
+  filter: none !important;
 }
 
 /* Força a logo (e outros elementos de tinta preta) pra branco independente
