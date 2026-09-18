@@ -35,8 +35,13 @@ export function Hero({ media }: { media: StaticMedia | null }) {
       ) : (
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(40_6%_20%),_hsl(40_4%_10%))]" />
       )}
-      {/* Overlay sutil — só o necessário pra legibilidade do texto, sem apagar o fundo. */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/25" />
+      {/* Overlay em duas camadas: uma base uniforme (garante um piso mínimo
+          de contraste em QUALQUER frame do vídeo, já que ao contrário de
+          uma foto fixa o vídeo tem cenas variáveis — algumas com céu bem
+          claro) + um gradiente por cima pra dar profundidade e reforçar
+          ainda mais perto do rodapé/topo, onde o texto e o header ficam. */}
+      <div className="absolute inset-0 bg-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/35" />
 
       {/* Wordmark gigante — puramente gráfico/decorativo (não substitui a
           logo real do header), reproduz a escala tipográfica extrema da
