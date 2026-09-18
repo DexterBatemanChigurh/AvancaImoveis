@@ -13,16 +13,6 @@ type CategoryOverview = {
   coverStorageKey: string | null;
 };
 
-// Cor de bloco reservada pra tile sem foto de capa ainda — mantém a
-// categoria com peso visual/intencional em vez de um placeholder cinza.
-const FALLBACK_BLOCK: Record<Property["kind"], string> = {
-  casa: "bg-block-terracotta",
-  apartamento: "bg-block-blue",
-  terreno: "bg-accent-soft",
-  comercial: "bg-block-yellow",
-  outro: "bg-block-beige",
-};
-
 export function Categories({ categories }: { categories: CategoryOverview[] }) {
   const available = categories.filter((c) => c.total > 0);
   if (available.length === 0) return null;
@@ -41,9 +31,7 @@ export function Categories({ categories }: { categories: CategoryOverview[] }) {
             <Reveal key={cat.kind} delay={i * 80}>
               <Link
                 href={`/imoveis?tipo=${cat.kind}`}
-                className={`group relative block aspect-[3/4] overflow-hidden rounded-2xl ${
-                  hasPhoto ? "bg-surface-2" : FALLBACK_BLOCK[cat.kind]
-                }`}
+                className="group relative block aspect-[3/4] overflow-hidden rounded-2xl bg-surface-2"
               >
                 {hasPhoto && (
                   <>

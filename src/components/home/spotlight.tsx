@@ -40,7 +40,7 @@ export function Spotlight({ property }: { property: SpotlightProperty | null }) 
         )}
         <Link
           href={`/imovel/${property.slug}`}
-          className="mt-2 flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition-transform hover:scale-[1.02]"
+          className="mt-2 flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-neutral-900 transition-transform hover:scale-[1.02]"
         >
           Conhecer imóvel
           <ArrowRight className="h-4 w-4" />

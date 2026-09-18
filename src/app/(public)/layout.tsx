@@ -42,7 +42,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-line bg-surface">
+      <footer className="bg-ink text-white/60">
         <div className="container grid gap-10 py-16 sm:grid-cols-[1.3fr_0.8fr_1fr_1fr] sm:py-20">
           <div className="flex flex-col gap-4">
             <Image
@@ -50,37 +50,37 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
               alt="Avança Imóveis"
               width={118}
               height={90}
-              className="brand-logo h-10 w-auto self-start"
+              className="force-invert h-10 w-auto self-start"
             />
-            <p className="max-w-sm text-sm leading-relaxed text-muted">{AVANCA.about}</p>
-            <p className="text-xs text-muted">Avança Imóveis faz parte do Grupo PIER7.</p>
+            <p className="max-w-sm text-sm leading-relaxed">{AVANCA.about}</p>
+            <p className="text-xs">Avança Imóveis faz parte do Grupo PIER7.</p>
           </div>
 
           <div className="flex flex-col gap-4 text-sm">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
               Navegação
             </span>
-            <Link href="/imoveis" className="link-underline w-fit text-muted hover:text-ink">
+            <Link href="/imoveis" className="link-underline w-fit hover:text-white">
               Imóveis
             </Link>
-            <Link href="/sobre" className="link-underline w-fit text-muted hover:text-ink">
+            <Link href="/sobre" className="link-underline w-fit hover:text-white">
               Sobre
             </Link>
             <WhatsappLink
               href={waLink("Olá! Vi o site da Avança Imóveis e gostaria de mais informações.")}
-              className="link-underline w-fit text-muted hover:text-ink"
+              className="link-underline w-fit hover:text-white"
             >
               Contato
             </WhatsappLink>
           </div>
 
           <div className="flex flex-col gap-4 text-sm">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
               Contato
             </span>
             <a
               href={`tel:+${AVANCA.phoneDigits}`}
-              className="flex items-center gap-2 text-muted hover:text-ink"
+              className="flex items-center gap-2 hover:text-white"
             >
               <Phone className="h-4 w-4 shrink-0" /> {AVANCA.phoneDisplay}
             </a>
@@ -88,24 +88,24 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
               href={AVANCA.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-muted hover:text-ink"
+              className="flex items-center gap-2 hover:text-white"
             >
               <Instagram className="h-4 w-4 shrink-0" /> {AVANCA.instagram}
             </a>
           </div>
 
           <div className="flex flex-col gap-4 text-sm">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
               Onde estamos
             </span>
-            <p className="flex items-start gap-2 text-muted">
+            <p className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
               {AVANCA.address}
             </p>
           </div>
         </div>
-        <div className="border-t border-line">
-          <div className="container flex flex-col gap-2 py-5 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-t border-white/10">
+          <div className="container flex flex-col gap-2 py-5 text-xs sm:flex-row sm:items-center sm:justify-between">
             <p>© {new Date().getFullYear()} Avança Imóveis. Todos os imóveis sujeitos a disponibilidade.</p>
             <p>Frutal, MG</p>
           </div>

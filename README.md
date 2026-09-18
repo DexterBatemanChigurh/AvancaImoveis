@@ -1,37 +1,40 @@
 # Avança Imóveis
 
-Plataforma da **Avança Imóveis**: catálogo público de imóveis à venda (focado em SEO),
-painel interno com login e — nas próximas fases — CRM em Kanban, visitas e dashboard.
+Plataforma completa da **Avança Imóveis** (Frutal, MG): catálogo público de imóveis
+voltado a SEO, painel interno com CRM, clientes, visitas, propostas, vendas e
+documentos — tudo num único projeto Next.js, sem depender de nenhum
+backend-as-a-service para dados (o Supabase entra só como Storage de arquivo).
 
-> Documento de referência do projeto: [`docs/proposta-plataforma-avanca-imoveis.md`](docs/proposta-plataforma-avanca-imoveis.md).
-> Esta base implementa a **Fundação (Fase 1)** e deixa o terreno pronto para as fases 2 e 3.
+> Documento original de proposta (histórico, escopo inicial que deu origem ao
+> projeto): [`docs/proposta-plataforma-avanca-imoveis.md`](docs/proposta-plataforma-avanca-imoveis.md).
+> Este README descreve o estado **atual** do projeto — já bem além do escopo
+> da Fase 1 descrita ali.
 
 ---
 
 ## Stack
 
-Sem dependência de nenhum backend-as-a-service. O próprio Next.js é o backend
-(Server Actions + rotas `/api`), e o banco é um PostgreSQL comum.
-
 | Camada | Escolha |
 |---|---|
 | App | Next.js 15 (App Router, Server Actions) + TypeScript — frontend **e** backend |
-| UI | React 19, Tailwind CSS, componentes próprios no padrão shadcn/ui |
-| Banco | PostgreSQL dedicado via **Drizzle ORM** (`docker compose` no dev) |
-| Auth | Própria: e-mail + senha (hash `scrypt`, nativo do Node) + sessão em cookie `httpOnly` na tabela `sessions`. Protege só `/admin` |
-| Arquivos | Supabase Storage + otimização de imagem com `sharp`. Fotos num bucket público, documentos num bucket privado servidos por `/admin/documentos` (exige login) |
-| Mapa | Leaflet / OpenStreetMap (embed, sem chave) + geocodificação via Nominatim, com pino manual no mapa como alternativa |
+| UI | React 19, Tailwind CSS, componentes próprios |
+| Banco | PostgreSQL via **Drizzle ORM** — [Neon](https://neon.tech) em produção, Postgres local (docker-compose) em desenvolvimento |
+| Auth | Própria, sem serviço externo: e-mail + senha (hash `scrypt`, nativo do Node) + sessão em cookie `httpOnly` (tabela `sessions`). Protege só `/admin` |
+| Rate-limit | Contador atômico no próprio banco (`rate_limits`) — ao contrário de uma solução em memória, funciona corretamente em serverless com múltiplas instâncias (login, formulário de interesse, alerta de busca) |
+| Arquivos | Supabase Storage — bucket público `fotos-imoveis` (fotos, otimizadas com `sharp`: WebP + miniatura) e bucket privado `documentos-privados` (matrícula, contrato etc., servidos por rota que exige login) |
+| Mapa | Leaflet / OpenStreetMap (embed, sem chave) + geocodificação via Nominatim, com pino manual como alternativa; endereço exato nunca aparece no catálogo público (raio aproximado) |
 | Localização | Filtro em cascata Estado → Cidade (municípios via API do IBGE) → Bairro |
-| E-mail | Resend (aviso de novo lead + alertas de busca, com confirmação por e-mail) — opcional |
-| Tempo real | Catálogo público se atualiza sozinho quando o admin publica/edita (Server-Sent Events) |
-| Deploy | Qualquer host de Node/container + um Postgres alcançável (a definir) |
+| E-mail | Resend (aviso de novo lead, alerta de busca com double opt-in) — opcional, degrada com elegância se não configurado |
+| PDF | `@react-pdf/renderer` — ficha do imóvel gerada sob demanda (nunca inclui proprietário, comissão ou endereço exato) |
+| Kanban | `@dnd-kit/core` — funil de negócios do CRM |
+| Tempo real | Catálogo público percebe mudanças do admin via polling leve (`/api/catalog-version`) |
+| Deploy | Vercel (app) + Neon (banco) + Supabase (storage) |
 
 ---
 
 ## Como rodar localmente
 
-Pré-requisito: **Docker** (para o Postgres). Sem Docker, veja
-["Postgres sem Docker"](#postgres-sem-docker) abaixo.
+Pré-requisito: **Docker** (só para o Postgres de desenvolvimento).
 
 ```bash
 # 1. Dependências
@@ -39,9 +42,10 @@ npm install
 
 # 2. Ambiente
 cp .env.example .env.local
-#   os valores padrão já apontam para o Postgres do docker-compose
+#   preencha DATABASE_URL (local ou Neon), NEXT_PUBLIC_SUPABASE_URL e
+#   SUPABASE_SERVICE_ROLE_KEY — os demais são opcionais (degradam sozinhos)
 
-# 3. Sobe o banco
+# 3. Sobe o banco local
 npm run db:up            # docker compose up -d db  (Postgres em localhost:5432)
 
 # 4. Cria as tabelas e popula dados de referência
@@ -56,9 +60,11 @@ npm run user:create -- --email voce@exemplo.com --name "Seu Nome"
 npm run dev              # http://localhost:3000  → /login
 ```
 
+Em produção, `DATABASE_URL` aponta pro Neon — não precisa de Docker lá.
+
 ### Criar / atualizar usuários
 
-Não há tela de cadastro (proposta §7 — recomendação é **um usuário por pessoa**):
+Não há tela de cadastro — cada pessoa da equipe tem sua própria conta:
 
 ```bash
 npm run user:create -- --email fernanda@avanca.com --name "Fernanda"
@@ -66,18 +72,6 @@ npm run user:create -- --email rogerio@avanca.com  --name "Rogério" --password 
 ```
 
 Rodar de novo com o mesmo e-mail **redefine a senha** desse usuário.
-`users.role` já existe para papéis diferenciados no futuro.
-
-### Postgres sem Docker
-
-Suba um Postgres qualquer (instalado localmente, VPS, ou um gerenciado como
-Neon/Railway) e ajuste `DATABASE_URL` no `.env.local`. O resto dos passos é igual.
-Para Postgres local via apt:
-
-```bash
-sudo apt install -y postgresql
-sudo -u postgres psql -c "create role avanca login password 'avanca'; create database avanca owner avanca;"
-```
 
 ---
 
@@ -86,103 +80,75 @@ sudo -u postgres psql -c "create role avanca login password 'avanca'; create dat
 ```
 src/
 ├── app/
-│   ├── (public)/            # catálogo aberto — SEO, sem login
-│   │   ├── imoveis/         #   grade + filtros
-│   │   └── imovel/[slug]/   #   página do imóvel + "Tenho interesse" + mapa
-│   ├── (admin)/admin/       # painel — gate no middleware + requireUser()
-│   │   ├── page.tsx         #   dashboard
-│   │   ├── imoveis/         #   lista / novo / editar   (Fase 1)
-│   │   ├── crm/             #   placeholder             (Fase 2)
-│   │   ├── clientes/        #   placeholder             (Fase 2)
-│   │   ├── visitas/         #   placeholder             (Fase 2)
-│   │   ├── proprietarios/   #   placeholder             (Fase 1/2)
-│   │   └── configuracoes/   #   placeholder             (Fase 2)
-│   ├── login/               # e-mail + senha (Server Action -> createSession)
-│   ├── auth/sign-out/       # POST -> destroySession
-│   ├── api/leads/           # endpoint alternativo do formulário de interesse
-│   ├── api/municipios/      # proxy do IBGE (filtro de cidade)
-│   ├── api/events/          # SSE — avisa o catálogo público quando algo muda
-│   ├── uploads/[...path]/   # serve fotos (rota pública)
-│   ├── (admin)/admin/documentos/[...path]/  # serve documentos (exige login)
-│   ├── sitemap.ts / robots.ts
-│   └── middleware.ts        # gate leve do /admin (só checa o cookie)
+│   ├── (public)/                  # catálogo aberto — SEO, sem login
+│   │   ├── imoveis/               #   grade + filtros
+│   │   ├── imovel/[slug]/         #   galeria, mapa, "Tenho interesse", imóveis parecidos
+│   │   ├── sobre/
+│   │   ├── favoritos/             #   favoritos (localStorage, sem conta)
+│   │   └── alertas/               #   confirmação/cancelamento de alerta de busca
+│   ├── (admin)/admin/             # painel — gate no middleware + requireUser()
+│   │   ├── page.tsx               #   dashboard (métricas reais)
+│   │   ├── imoveis/               #   CRUD + fotos + documentos + match
+│   │   ├── crm/                   #   Kanban de negócios (deals/stages) + propostas
+│   │   ├── clientes/              #   ficha, critérios de busca, timeline
+│   │   ├── visitas/               #   agenda
+│   │   ├── proprietarios/        #   CRUD + documentos
+│   │   ├── configuracoes/         #   categorias de documento + etapas do funil (editáveis, sem migration)
+│   │   ├── auditoria/             #   log de alterações (activity_logs)
+│   │   └── documentos/[...path]/  #   serve documentos privados (exige login)
+│   ├── login/                     # e-mail + senha (Server Action → createSession)
+│   ├── auth/sign-out/             # POST → destroySession
+│   └── api/
+│       ├── catalog-version/       #   polling do catálogo público
+│       ├── municipios/            #   proxy do IBGE (filtro de cidade)
+│       └── properties/favoritos/  #   busca os favoritos salvos no navegador
 ├── db/
-│   ├── schema/              # Drizzle — fonte da verdade do modelo de dados
-│   ├── migrations/          # geradas por drizzle-kit
-│   ├── index.ts             # client
+│   ├── schema/                    # Drizzle — fonte da verdade do modelo de dados
+│   ├── migrations/                # geradas por drizzle-kit
 │   └── seed.ts
-├── features/                # regra de negócio por domínio (cresce por aqui)
-│   ├── auth/                #   getSessionUser / requireUser
-│   ├── properties/          #   queries + Server Actions + zod schema
-│   ├── owners/
-│   ├── leads/               #   "Tenho interesse" -> lead + card + e-mail
-│   └── dashboard/           #   métricas
-├── components/  ui | public | admin
+├── features/                      # regra de negócio por domínio
+│   ├── auth/  properties/  owners/  clients/  crm/  stages/  visits/
+│   └── proposals/  documents/  leads/  alerts/  notifications/  analytics/  audit/  dashboard/
+├── components/  ui | public | admin | home
 └── lib/
-    ├── auth/                # constants (cookie) · password (scrypt) · session (cookie+DB)
-    ├── storage/             # local (disco) · images (sharp) · url (chaves/URLs)
-    ├── rate-limit.ts        # throttling e limite de conexões em memória (login, leads, alertas, SSE)
-    └── env · constants · format · slug · seo · geocode · ibge · events · request-ip
-scripts/create-user.ts       # CLI de criação de usuário
-docker-compose.yml           # Postgres de desenvolvimento
+    ├── auth/                      # cookie · scrypt · sessão
+    ├── storage/                   # Supabase (fotos públicas + documentos privados) · sharp
+    ├── match.ts                   # compatibilidade cliente ↔ imóvel (calculada on-demand, nunca persistida)
+    ├── rate-limit.ts              # limitador atômico no banco (funciona em serverless)
+    ├── pdf/                       # ficha do imóvel
+    └── env · constants · format · slug · seo · geocode · geo-privacy · ibge
+scripts/create-user.ts             # CLI de criação de usuário
+docker-compose.yml                 # Postgres de desenvolvimento (produção usa Neon)
 ```
 
-### Princípios da fundação
-
-- **Público e interno separados por route group** (`(public)` / `(admin)`), mesmo banco.
-  O que decide a visibilidade é `properties.status = 'disponivel'`.
-- **Auth própria, sem serviço externo.** Senha em `scrypt` (biblioteca padrão do Node),
-  sessão opaca em cookie `httpOnly` com o hash guardado em `sessions`. O middleware só
-  checa a *presença* do cookie (roda no Edge, sem banco); a validação real é do
-  `requireUser()` no layout de `/admin`.
-- **Proprietário e documentos nunca são carregados** nas queries públicas
-  (ver `features/properties/queries.ts`).
-- **`features/` isola a regra de negócio** das telas — cada domínio novo entra como
-  uma pasta, sem inchar as páginas.
-- **Env validado no boot** (`lib/env.ts`, Zod). Recursos opcionais (R2, e-mail) são
-  detectados por `features.*` e degradam com elegância se não configurados.
-- **Tema claro/escuro** via CSS custom properties em `globals.css`.
-
 ---
 
-## Roadmap
+## O que existe hoje
 
-### Fase 1 — Fundação  *(esta base)*
-- [x] Modelo de dados completo (todas as entidades da proposta)
-- [x] Catálogo público + página do imóvel + SEO (sitemap, OG, JSON-LD)
-- [x] Filtro do catálogo (estado, cidade — via IBGE —, bairro, tipo, preço, quartos, banheiros, vagas) + paginação
-- [x] Autenticação própria (senha + sessão) + gate de `/admin` + limite de tentativas de login
-- [x] CRUD textual de imóveis + link compartilhável + contador de views (1 por IP)
-- [x] Upload, ordenação e capa de fotos (disco local + `sharp`), com lightbox em tela cheia na página do imóvel
-- [x] Geocodificação automática no salvar (Nominatim, com pino manual no mapa como alternativa)
-- [x] Formulário "Tenho interesse" → cria lead + card + e-mail (com limite de envios por IP)
-- [x] Alertas de busca por e-mail, com confirmação (double opt-in) e cancelamento
-- [x] Catálogo público atualiza sozinho quando o admin publica/edita (SSE)
-- [ ] CRUD de proprietários (mesmo padrão do formulário de imóvel)
-- [ ] Tela de troca de senha do próprio usuário
-- [ ] Papéis de acesso diferenciados (`users.role` existe; hoje todo mundo tem o mesmo acesso, por decisão do negócio)
+**Catálogo público**
+- Grade com filtros (tipo, estado/cidade/bairro, preço, quartos, banheiros, vagas) + paginação
+- Página do imóvel: galeria (foto grande + grade de secundárias no desktop, tira com scroll no mobile, lightbox em tela cheia), mapa com raio aproximado, características, imóveis parecidos
+- Favoritos sem conta (guardado no navegador) e compartilhamento
+- Formulário "Tenho interesse" → cria/atualiza cliente + negócio no CRM + e-mail, com proteção contra duplicidade (reenvio no mesmo imóvel não cria um segundo card) e contra spam
+- Alerta de busca por e-mail (double opt-in, cancelável)
+- Clique no WhatsApp é registrado (aparece no dashboard)
+- SEO: sitemap, robots, Open Graph, JSON-LD
 
-### Fase 2 — Operação comercial
-- [ ] CRM Kanban (`@dnd-kit/core`) sobre `deals` / `stages` / `activities`
-- [ ] Clientes: ficha, critérios, timeline, exclusão LGPD
-- [ ] Visitas + lembrete automático (job lendo `visits.remind_at`)
-- [ ] Documentos por imóvel, em seções por categoria
-- [ ] Ficha do imóvel em PDF
-- [ ] Dashboard com funil e conversão
+**Painel /admin**
+- Imóveis: CRUD completo, fotos (upload múltiplo, otimização automática, reordenação, capa), documentos por categoria, clientes compatíveis (match calculado on-demand ao criar/editar), ficha em PDF
+- CRM: Kanban de negócios com etapas configuráveis, propostas, fechamento de venda (transação única que marca o imóvel como vendido)
+- Clientes: ficha, critérios de busca, timeline de atividades
+- Visitas: agenda
+- Proprietários: CRUD + documentos
+- Configurações: categorias de documento e etapas do funil, ambas editáveis sem precisar de migration
+- Auditoria: log de criação/edição de imóvel e upload/remoção de documento
+- Dashboard: imóveis, visitas, propostas, vendas, comissão do mês, cliques no WhatsApp
 
-### Fase 3 — Refino
-- [ ] Match imóvel ↔ lead (critérios já são estruturados em `clients`)
-- [ ] Indicadores avançados
-- [ ] Avaliar WhatsApp automático (API paga) e domínio próprio
-
----
-
-## Decisões em aberto (alinhar com Rogério / Fernanda)
-
-- Onde hospedar o app e o Postgres em produção.
-- Registrar domínio próprio agora, pelo SEO.
-- Lista final de categorias de documento.
-- Se trabalham com contrato de **captação exclusiva** (campos já existem, opcionais).
+**Segurança**
+- Autenticação própria, sessão em cookie `httpOnly`
+- Rate-limit de login/formulário/alerta guardado no banco — correto mesmo com várias instâncias serverless em paralelo
+- Documentos privados nunca ficam num bucket público — servidos por rota autenticada
+- Endereço exato do imóvel nunca sai numa resposta pública (nem no mapa, nem na API, nem no JSON-LD)
 
 ---
 
@@ -193,7 +159,7 @@ docker-compose.yml           # Postgres de desenvolvimento
 | `npm run dev` | ambiente de desenvolvimento |
 | `npm run build` / `npm start` | build de produção |
 | `npm run lint` / `npm run typecheck` | qualidade |
-| `npm run db:up` / `npm run db:down` | sobe / derruba o Postgres do docker-compose |
+| `npm run db:up` / `npm run db:down` | sobe / derruba o Postgres local (docker-compose) |
 | `npm run db:generate` | gera migrations a partir de `src/db/schema` |
 | `npm run db:migrate` | aplica migrations |
 | `npm run db:seed` | popula etapas do funil e categorias de documento |

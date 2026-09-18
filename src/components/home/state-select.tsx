@@ -11,13 +11,13 @@ export function StateSelect() {
     <select
       name="uf"
       defaultValue=""
-      className="h-12 rounded-full border border-white/15 bg-white/5 px-4 text-sm text-bg outline-none focus-visible:border-white/30"
+      className="h-12 rounded-full border border-white/15 bg-white/5 px-4 text-sm text-white outline-none focus-visible:border-white/30"
     >
-      <option value="" className="text-ink">
+      <option value="" className="text-neutral-900">
         Onde deseja morar
       </option>
       {BRAZIL_STATES.map((s) => (
-        <option key={s.uf} value={s.uf} className="text-ink">
+        <option key={s.uf} value={s.uf} className="text-neutral-900">
           {s.name}
         </option>
       ))}

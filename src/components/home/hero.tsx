@@ -2,21 +2,51 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import type { StaticMedia } from "@/lib/hero-image";
+
 /**
- * `src` vem de lib/hero-image.ts — um arquivo estático em public/hero.<ext>
- * escolhido manualmente (não a foto de nenhum imóvel cadastrado). Enquanto
- * esse arquivo não existir, renderiza sem foto de propósito.
+ * `media` vem de lib/hero-image.ts — um arquivo estático em
+ * public/hero.<ext> escolhido manualmente (não a foto de nenhum imóvel
+ * cadastrado). Aceita vídeo (mp4/webm, com autoplay mudo em loop) ou
+ * imagem — o hero atual usa vídeo. Enquanto nenhum arquivo existir,
+ * renderiza sem mídia de propósito.
+ *
+ * Cantos arredondados só na base (não nas 4 bordas) — de propósito: o
+ * header fixo/transparente (site-header.tsx) precisa continuar cobrindo
+ * 100% da largura no topo pra manter contraste correto sobre o fundo; uma
+ * margem lateral no hero inteiro deixaria um respiro bege visível atrás
+ * do header, quebrando o texto branco dele.
  */
-export function Hero({ src }: { src: string | null }) {
+export function Hero({ media }: { media: StaticMedia | null }) {
   return (
-    <section className="relative flex h-[100svh] min-h-[560px] w-full items-end overflow-hidden bg-ink">
-      {src ? (
-        <Image src={src} alt="" fill priority sizes="100vw" className="object-cover" />
+    <section className="relative flex h-[100svh] min-h-[560px] w-full items-end overflow-hidden rounded-b-[28px] bg-ink">
+      {media?.type === "video" ? (
+        <video
+          src={media.src}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : media?.type === "image" ? (
+        <Image src={media.src} alt="" fill priority sizes="100vw" className="object-cover" />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(158_12%_16%),_hsl(40_10%_6%))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(40_6%_20%),_hsl(40_4%_10%))]" />
       )}
-      {/* Overlay sutil — só o necessário pra legibilidade do texto, sem apagar a foto. */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10" />
+      {/* Overlay sutil — só o necessário pra legibilidade do texto, sem apagar o fundo. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/25" />
+
+      {/* Wordmark gigante — puramente gráfico/decorativo (não substitui a
+          logo real do header), reproduz a escala tipográfica extrema da
+          referência usando o nome real da marca, não texto inventado. */}
+      <p
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-20 select-none text-center font-brand text-[22vw] font-extrabold leading-none tracking-tight text-white/10 sm:top-24"
+      >
+        AVANÇA
+      </p>
 
       <div className="container relative z-10 flex flex-col gap-6 pb-20 pt-40 sm:pb-28">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">
@@ -34,7 +64,7 @@ export function Hero({ src }: { src: string | null }) {
         <div className="mt-4 flex flex-wrap items-center gap-5">
           <Link
             href="/imoveis"
-            className="flex h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-ink transition-transform duration-300 hover:scale-[1.02]"
+            className="flex h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-neutral-900 transition-transform duration-300 hover:scale-[1.02]"
           >
             Explorar imóveis
             <ArrowRight className="h-4 w-4" />

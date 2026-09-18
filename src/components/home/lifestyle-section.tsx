@@ -22,20 +22,20 @@ export function LifestyleSection({ src }: { src: string | null }) {
             className="object-cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(158_12%_16%),_hsl(40_10%_6%))]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(40_6%_20%),_hsl(40_4%_10%))]" />
         )}
       </Reveal>
 
       <Reveal
         delay={150}
-        className="flex flex-col justify-center gap-6 rounded-brand bg-block-yellow p-8 sm:p-10 lg:w-[42%] lg:self-stretch"
+        className="flex flex-col justify-center gap-6 rounded-brand bg-ink p-8 text-white sm:p-10 lg:w-[42%] lg:self-stretch"
       >
         <h2 className="text-3xl leading-tight sm:text-5xl">
           Seu próximo endereço
           <br />
           começa aqui.
         </h2>
-        <p className="max-w-sm text-base leading-relaxed text-ink/70">
+        <p className="max-w-sm text-base leading-relaxed text-white/60">
           Mais do que quatro paredes: buscamos imóveis que se encaixam no seu ritmo, na sua
           rotina e no seu jeito de viver — em bairros que fazem sentido pra você.
         </p>

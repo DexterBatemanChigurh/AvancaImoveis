@@ -19,7 +19,7 @@ export function FinalCta({ storageKey }: { storageKey: string | null }) {
           className="object-cover opacity-60"
         />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(158_12%_16%),_hsl(40_10%_6%))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(40_6%_20%),_hsl(40_4%_10%))]" />
       )}
       <div className="absolute inset-0 bg-black/45" />
 
@@ -32,7 +32,7 @@ export function FinalCta({ storageKey }: { storageKey: string | null }) {
         <div className="mt-2 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/imoveis"
-            className="flex h-12 items-center rounded-full bg-white px-6 text-sm font-semibold text-ink transition-transform hover:scale-[1.02]"
+            className="flex h-12 items-center rounded-full bg-white px-6 text-sm font-semibold text-neutral-900 transition-transform hover:scale-[1.02]"
           >
             Explorar imóveis
           </Link>

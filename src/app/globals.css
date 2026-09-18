@@ -69,11 +69,6 @@ html {
   --accent: 217 85% 45%;
   --accent-ink: 217 85% 34%;
   --accent-soft: 217 60% 92%;
-  --block-blue: 217 60% 92%;
-  --block-beige: 210 20% 92%;
-  --block-terracotta: 210 20% 92%;
-  --block-yellow: 210 20% 92%;
-  --block-pink: 210 20% 92%;
   --ok: 152 45% 32%;
   --warn: 35 65% 42%;
   --danger: 0 68% 45%;
@@ -91,11 +86,6 @@ html {
     --accent: 217 85% 68%;
     --accent-ink: 217 90% 80%;
     --accent-soft: 217 40% 22%;
-    --block-blue: 217 40% 22%;
-    --block-beige: 222 18% 16%;
-    --block-terracotta: 222 18% 16%;
-    --block-yellow: 222 18% 16%;
-    --block-pink: 222 18% 16%;
     --ok: 152 40% 58%;
     --warn: 35 60% 62%;
     --danger: 0 75% 68%;
@@ -113,71 +103,50 @@ html {
   --accent: 217 85% 68%;
   --accent-ink: 217 90% 80%;
   --accent-soft: 217 40% 22%;
-  --block-blue: 217 40% 22%;
-  --block-beige: 222 18% 16%;
-  --block-terracotta: 222 18% 16%;
-  --block-yellow: 222 18% 16%;
-  --block-pink: 222 18% 16%;
   --ok: 152 40% 58%;
   --warn: 35 60% 62%;
   --danger: 0 75% 68%;
 }
 
 /*
-  Marca pública Avança Imóveis — paleta neutra e quente (editorial, não
-  preto/branco puro), aplicada só dentro de .brand-public (site público).
-  O painel interno continua com a paleta do topo do arquivo.
-  Off-white #F7F5F0 · branco #FFFFFF · grafite #20211F · preto profundo
-  #11100E · cinza secundário #77736C.
-  Accent é o verde institucional #315C4C — identidade da marca, usado só
-  como acento (selos, ícones, traços finos), nunca espalhado em blocos
-  grandes da interface. --accent-soft é o verde claro #DCE8E1, reservado
-  pra fundos discretos de ícone/selo que precisam do tom exato da marca
-  em vez do accent com opacidade.
-  --ink-2 é um segundo "preto" (grafite, mais quente/suave que o ink
-  preto-profundo) — usado só na superfície escura "flutuante" da busca da
-  home, pra diferenciar de blocos de alto impacto (hero, CTA final) que
-  usam --ink puro.
-  --block-* são tons editoriais suaves (azul, bege, terracota, amarelo,
-  rosa) usados em blocos específicos pra dar ritmo de cor à composição da
-  home (diferenciais, seção de estilo de vida, "encontrar é fácil") — nunca
-  como decoração espalhada; o verde institucional continua sendo a
-  assinatura visual, esses tons são só pontuação editorial ao redor dele.
+  Marca pública Avança Imóveis — identidade "arquitetura/imobiliária
+  premium" (referência: estúdios de arquitetura editoriais), aplicada só
+  dentro de .brand-public (site público). O painel interno continua com a
+  paleta do topo do arquivo.
+  Off-white #F3F0E9 · branco #FFFFFF · carvão #242321 · cinza secundário
+  #77736C. Sem paleta colorida espalhada — o contraste vem de
+  OFF-WHITE + CARVÃO + FOTOGRAFIA. Accent é o verde institucional #315C4C,
+  usado só como acento pontual (selos, ícones, traços finos), nunca em
+  blocos grandes. --accent-soft é o verde claro #DCE8E1, reservado pra
+  fundos discretos de ícone/selo que precisam do tom exato da marca.
+  --ink-2 é uma variação sutil do carvão — usada só na superfície
+  "flutuante" da busca da home, pra diferenciar de blocos de alto impacto
+  (hero, CTA final) que usam --ink puro.
 */
 .brand-public {
-  --bg: 43 30% 95%;
+  --bg: 42 29% 93%;
   --surface: 0 0% 100%;
-  --surface-2: 40 12% 91%;
-  --ink: 40 10% 6%;
-  --ink-2: 90 3% 13%;
+  --surface-2: 40 15% 89%;
+  --ink: 40 4% 14%;
+  --ink-2: 40 4% 18%;
   --muted: 38 5% 45%;
-  --line: 40 10% 86%;
+  --line: 40 10% 84%;
   --accent: 158 30% 28%;
   --accent-ink: 158 32% 20%;
   --accent-soft: 145 21% 89%;
-  --block-blue: 207 40% 90%;
-  --block-beige: 37 42% 88%;
-  --block-terracotta: 24 45% 84%;
-  --block-yellow: 45 66% 86%;
-  --block-pink: 3 39% 90%;
 }
 @media (prefers-color-scheme: dark) {
   .brand-public {
-    --bg: 40 8% 8%;
-    --surface: 40 8% 12%;
-    --surface-2: 40 8% 16%;
-    --ink: 43 15% 92%;
-    --ink-2: 40 8% 20%;
+    --bg: 40 6% 9%;
+    --surface: 40 6% 13%;
+    --surface-2: 40 6% 17%;
+    --ink: 42 20% 93%;
+    --ink-2: 40 6% 21%;
     --muted: 38 6% 62%;
-    --line: 40 8% 22%;
+    --line: 40 6% 23%;
     --accent: 158 35% 55%;
     --accent-ink: 158 40% 70%;
     --accent-soft: 150 15% 20%;
-    --block-blue: 210 20% 20%;
-    --block-beige: 39 20% 17%;
-    --block-terracotta: 23 26% 18%;
-    --block-yellow: 43 32% 15%;
-    --block-pink: 4 17% 17%;
   }
 }
 .brand-public h1,

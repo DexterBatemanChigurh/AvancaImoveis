@@ -18,7 +18,7 @@ import {
   listMostViewedThisMonth,
   listPublicProperties,
 } from "@/features/properties/queries";
-import { getHeroImageSrc, getLifestyleImageSrc } from "@/lib/hero-image";
+import { getHeroMedia, getLifestyleImageSrc } from "@/lib/hero-image";
 
 export const metadata: Metadata = {
   // "absolute": ignora o template "%s · Avança Imóveis" do layout raiz —
@@ -52,12 +52,12 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      <Hero src={getHeroImageSrc()} />
+      <Hero media={getHeroMedia()} />
       <SearchBlock />
+      <WhyUs />
 
       <FeaturedProperties properties={gridProperties} />
       <IntroSection propertiesCount={totals.total} districtsCount={districts.length} />
-      <WhyUs />
       <LifestyleSection src={lifestyleImage} />
       <Categories categories={categories} />
       <Spotlight property={spotlight} />

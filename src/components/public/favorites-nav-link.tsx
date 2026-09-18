@@ -24,7 +24,7 @@ export function FavoritesNavLink({ overlay = false }: { overlay?: boolean }) {
         <span
           className={cn(
             "absolute right-0.5 top-0.5 grid h-4 w-4 place-items-center rounded-full text-[10px] font-semibold",
-            overlay ? "bg-white text-ink" : "bg-ink text-bg",
+            overlay ? "bg-white text-neutral-900" : "bg-ink text-bg",
           )}
         >
           {count}

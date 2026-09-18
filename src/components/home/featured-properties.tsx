@@ -122,7 +122,7 @@ function Tile({
             </span>
           )}
           {isPopular && (
-            <span className="flex items-center gap-1 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-ink">
+            <span className="flex items-center gap-1 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-neutral-900">
               <Flame className="h-3 w-3" />
               Alta procura
             </span>

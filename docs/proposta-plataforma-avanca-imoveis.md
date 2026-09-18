@@ -4,6 +4,11 @@
 > Escopo: só venda · Construção incremental, em conjunto
 > Para Rogério, Fernanda e Ana Clara operarem venda de ponta a ponta.
 
+> **Documento histórico.** Esta é a proposta original que deu origem ao projeto —
+> mantida como registro do escopo/raciocínio inicial. O estado atual (o que
+> realmente foi construído, stack real, estrutura de pastas) está no
+> [`README.md`](../README.md) da raiz do projeto, que é o documento vivo.
+
 Portfólio de imóveis com **catálogo público** voltado a SEO, um **painel interno** com login e um **CRM em Kanban**.
 
 ---

@@ -104,7 +104,7 @@ export function SiteHeader() {
             href={waLink("Olá! Vi o site da Avança Imóveis e gostaria de mais informações.")}
             className={cn(
               "hidden h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors sm:flex",
-              overlay ? "bg-white text-ink hover:bg-white/90" : "bg-ink text-bg hover:opacity-85",
+              overlay ? "bg-white text-neutral-900 hover:bg-white/90" : "bg-ink text-bg hover:opacity-85",
             )}
           >
             <MessageCircle className="h-4 w-4" />
